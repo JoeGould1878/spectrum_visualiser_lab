@@ -7,3 +7,9 @@ CONFIG_FREERTOS_HZ=1000
 # Full CPU speed and optimise for speed (FFT every frame)
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
 CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+# Serial debug stream (FRAME / RAW lines) needs more than 115200 baud;
+# idf.py monitor picks this rate up automatically
+CONFIG_ESP_CONSOLE_UART_CUSTOM=y
+CONFIG_ESP_CONSOLE_UART_NUM=0
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=921600

@@ -46,8 +46,18 @@ esp_err_t adc_sampler_stop(void);
  */
 esp_err_t adc_sampler_read(uint16_t *out, size_t n, uint32_t timeout_ms);
 
-/** Samples per second actually delivered since start (counted, not assumed). */
+/**
+ * Conversions per second the hardware actually produced since start, counted
+ * in the driver's frame-done interrupt (so it is independent of how fast the
+ * caller reads). Compare with the requested rate.
+ */
 float adc_sampler_measured_rate_hz(void);
+
+/**
+ * Times the driver's buffer filled up and old samples were thrown away since
+ * start. Non-zero means the reader fell behind and some frames have a gap.
+ */
+uint32_t adc_sampler_overflows(void);
 
 /** Free the driver. */
 void adc_sampler_deinit(void);

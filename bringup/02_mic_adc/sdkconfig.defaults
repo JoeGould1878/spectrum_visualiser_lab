@@ -1,2 +1,8 @@
 CONFIG_IDF_TARGET="esp32s3"
 CONFIG_FREERTOS_HZ=1000
+
+# Serial debug stream (FRAME / RAW lines) needs more than 115200 baud;
+# idf.py monitor picks this rate up automatically
+CONFIG_ESP_CONSOLE_UART_CUSTOM=y
+CONFIG_ESP_CONSOLE_UART_NUM=0
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=921600
