@@ -1,0 +1,25 @@
+# ESP-IDF build output
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+
+# Bring-up projects build separately
+bringup/*/build/
+bringup/*/sdkconfig
+bringup/*/sdkconfig.old
+bringup/*/managed_components/
+
+# Host (laptop) tests
+host_tests/build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp

@@ -1,0 +1,9 @@
+# Applied when sdkconfig is first generated (delete sdkconfig to re-apply).
+CONFIG_IDF_TARGET="esp32s3"
+
+# 1 kHz tick so vTaskDelay(1) = 1 ms
+CONFIG_FREERTOS_HZ=1000
+
+# Full CPU speed and optimise for speed (FFT every frame)
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_COMPILER_OPTIMIZATION_PERF=y

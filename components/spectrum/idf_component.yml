@@ -1,0 +1,5 @@
+## Downloaded automatically by the IDF component manager on first build
+## (into managed_components/, which is git-ignored). dependencies.lock in the
+## project root pins the exact version — commit that file.
+dependencies:
+  espressif/esp-dsp: "^1"
