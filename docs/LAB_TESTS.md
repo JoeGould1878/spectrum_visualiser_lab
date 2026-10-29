@@ -6,7 +6,8 @@ After a test sets a value: change it in `app_config.h`, add a decision-log line 
 
 **Before anything:** camera ribbon unplugged · `. $IDF_PATH/export.sh` · if you built before 29/10 afternoon, delete `sdkconfig` (and `bringup/*/sdkconfig`) once so the 921600 baud setting applies.
 
-Log names: `docs/evidence/logs/YYYY-MM-DD_<test>.txt` — capture with `idf.py -p /dev/ttyACM0 monitor | tee <file>`.
+Log names: `docs/evidence/logs/YYYY-MM-DD_<test>.txt` — capture with `tools/capture.sh <test>` (or `idf.py -p /dev/ttyACM0 monitor | tee <file>`).
+Analysis: `source .venv/bin/activate` then the `tools/` scripts named under each test (see `tools/README.md`).
 
 ---
 
@@ -38,7 +39,7 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee ../../docs/evidence/logs/2026-1
 
 Wiring: MAX9814 VDD → 3.3V, GND → GND, OUT → GPIO 1. Gain pin: VDD = 40 dB, GND = 50 dB, open = 60 dB. A/R open.
 
-- [ ] First ~20 s: six `RATE_TEST,<requested>,<measured>,<overflows>` lines → copy into a table (requested vs measured, % error)
+- [ ] First ~20 s: six `RATE_TEST,<requested>,<measured>,<overflows>` lines → `python tools/rate_table.py LOG` gives the table (requested vs measured, % error)
   → **sets** `APP_SAMPLE_RATE_ACTUAL_HZ` (measured value at 40 000 requested); decides whether 40 kHz stays
 - [ ] Then `RATE / STATS / RAW` every second. For **each gain setting (40, 50, 60 dB)** save a separate log of about 10 s each of:
   - [ ] quiet room (nobody talking) → `STATS` mean = bias in counts; rms = noise
@@ -49,7 +50,7 @@ Wiring: MAX9814 VDD → 3.3V, GND → GND, OUT → GPIO 1. Gain pin: VDD = 40 dB
 - [ ] → **sets** gain choice (lowest gain that still gives a usable signal for talking; least clipping on claps)
 - [ ] → **sets** `APP_SILENCE_RMS` (a bit above the quiet-room rms at the chosen gain)
 - [ ] → **checks** `APP_CLIP_MARGIN` (how close to 0/4095 a clap gets)
-- [ ] Plot one 1 kHz `RAW` frame (`tools/plot_raw.py`, coming) → should look like a sine: evidence for the report
+- [ ] `python tools/plot_raw.py LOG` on each log: bias / min / max / rms summary + plot. The 1 kHz log should look like a sine with one spectrum peak: evidence for the report
 
 ---
 
@@ -65,11 +66,11 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 
 ### B1. Noise floor — quiet room
 - [ ] Mic connected, room quiet, full mode, 30 s log
-  → **sets** `APP_FLOOR_DB` (a few dB above the typical quiet column level in `FRAME` lines) and `APP_TONE_MIN_DB`
+  → `python tools/frames.py LOG` prints a suggested `APP_FLOOR_DB` (loudest column's 95th percentile + 1 dB) → **sets** `APP_FLOOR_DB`; set `APP_TONE_MIN_DB` ~10 dB above it
 - [ ] Check R5: ≤ 1 lit pixel per column in silence (photo)
 
 ### B2. Real frame rate, processing time, latency budget
-- [ ] From any log: `FRAME` lines per second (R4 ≥ 20), `process_us` column (FFT + mapping time), `RATE` lines (sample rate stable?)
+- [ ] `python tools/frames.py LOG` on any log: frame rate (R4 ≥ 20), processing time, sample rate, display/latency stats, status-flag %
 - [ ] `DISPLAY,<fps>,<age_avg_ms>,<age_max_ms>,<write_us>` lines: display refresh (expect ~40), frame age, SPI write time
   → latency budget for the report: capture (25.6 ms at N = 1024) + age_avg ≈ electronic latency; compare with the clap video (B4)
 - [ ] Any `ADC buffer overflowed` warnings? If yes → raise `APP_DEBUG_EVERY_N_FRAMES`
@@ -77,14 +78,14 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 ### B3. Electrical input path (function generator) — needs a small circuit
 Proposed circuit (confirm before building): generator → 10 µF cap → node biased at 1.65 V by two 10 kΩ resistors (3.3 V to GND) → 1 kΩ → GPIO 1, with 15 nF from GPIO 1 to GND (low-pass ≈ 10.6 kHz). **Mic unplugged from GPIO 1 while using this.** Generator: sine, **1 Vpp, 0 V offset**.
 - [ ] Column accuracy (R2): tone at the centre of every 4th column (centres from `test_band_map` table) — note which column lights
-- [ ] Tone-finder accuracy: 100, 200, 440, 1000, 2000, 5000, 7500 Hz — `TONE` lines, set Hz vs shown Hz
+- [ ] Tone-finder accuracy: 100, 200, 440, 1000, 2000, 5000, 7500 Hz — one log per tone (`capture.sh B3_tone440` …), then `tools/tone_stats.py LOG --set-hz F --path electrical --csv docs/evidence/accuracy.csv` per log, then `tools/plot_accuracy.py docs/evidence/accuracy.csv`
 - [ ] Frequency response (R1): 50 Hz → 20 kHz in steps, same amplitude — peak column level vs frequency
 - [ ] Leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 — how many neighbouring columns light
 - [ ] Two-tone resolution (if the generator has two channels, or generator + phone): full vs bass/voice mode
 - [ ] Aliasing (R6): 25 kHz and 30 kHz tones — where do they show up? With and without the 15 nF cap
 
 ### B4. Acoustic path (phone tone app → speaker → mic)
-- [ ] Same tone list as B3, phone at fixed distance (note it) — compare with the generator results
+- [ ] Same tone list as B3, phone at fixed distance (note it) — `tone_stats.py … --path acoustic` into the same CSV, so the plot compares both paths
 - [ ] Loudness / AGC (R7): 1 kHz, phone volume in steps — bar height vs volume
 - [ ] Latency (R3): slow-mo phone video of a clap next to the display → frames from clap to LEDs
 - [ ] Music + speech demo videos: full mode vs linear mode (same song) — the linear vs hybrid comparison

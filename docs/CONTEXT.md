@@ -55,7 +55,7 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - [x] Pure components + laptop tests: `band_map`, `bar_model`, `tone_finder` (29/10, `fdee253`)
 - [x] `spectrum` (esp-dsp): DC removal, decimation filter, Hann, dBFS (29/10, `f92bcea`). Not testable off-board.
 - [x] Main app: plumbing (`a8ac360`), audio_task (`517849f`), display_task (`a143fb9`), input_task + main — full firmware builds (29/10)
-- [ ] Python tools for evidence
+- [x] Python tools for evidence (`tools/`, checked on synthetic logs) (29/10)
 - [ ] Core features → flagship → test plan → demo
 
 ## Open questions
@@ -70,3 +70,4 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - **29 Oct:** Joe confirmed teaching-lab framing and that a lab function generator is available. Wrote `max7219` driver (SPI mode 0, no DMA, whole chain per transaction, 1 MHz), all of `frame_gfx` incl. 3x5 font and 16-way orientation mapping (host-tested), and bring-up 01 (test mode → raw bits → orientation sweep → 5-min soak at 40 fps with write timing). Next: Joe runs bring-up 01; meanwhile Claude starts `adc_sampler` / bring-up 02.
 - **29 Oct (afternoon):** While Joe on break: adc_sampler + bring-up 02, pure components + tests, spectrum — committed one feature at a time with a review each (Joe asked for per-feature commits + reviews). All decisions logged in PLAN.md. Flagged: linear baseline uses N = 1024 / same range as full mode instead of Aidan's N = 512 (check with team).
 - **29 Oct:** Joe confirmed: start listening at power-up; linear baseline at N = 1024 / full range. Added `docs/LAB_TESTS.md` (kept updated per commit).
+- **29 Oct:** Credit wording applied to every file (Joe: design/interfaces drafted with Claude; Claude: implementation; Joe: review + hardware testing). Python tools written and checked against synthetic logs. Everything for the 2 pm lab is in `docs/LAB_TESTS.md`.

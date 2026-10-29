@@ -242,6 +242,10 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 | 29/10 | `input_task_start()` now takes the loaded settings (header change) | Input task loads settings itself | main already loads them once; passing them in means the first button press steps from the real saved state, and NVS is read in one place |
 | 29/10 | Firmware prints its key settings at boot (rate, N, window, range, floor, dB/row, SPI clock) | Rely on notes | Every evidence log then records the configuration it was made with, so results can be compared after values change |
 | 29/10 | Firmware runs with no buttons wired (pull-ups hold the pins high) | — | Session-B tests can start before buttons are wired; the saved/default mode is used |
+| 29/10 | Analysis tools in plain Python (numpy + matplotlib), one script per test, reading raw monitor logs; tables printed as Markdown | Spreadsheet by hand; pandas; Jupyter notebooks | Same log → same numbers every time (repeatable evidence); Markdown tables paste straight into the report; scripts live in the repo next to the firmware they measure |
+| 29/10 | Tone accuracy uses the **median** shown Hz over a log (first 0.5 s skipped), plus the 5–95 % spread | Mean; a single reading | Median ignores the odd glitch frame; the spread shows how steady the reading is, which matters to a student reading the digits |
+| 29/10 | Suggested noise floor = loudest column's 95th-percentile level in a quiet room + 1 dB | Average level; by eye | R5 allows ≤ 1 lit pixel per column, so the floor must sit above nearly all quiet frames in the worst column (e.g. mains hum), not the average one |
+| 29/10 | `plot_raw.py` spectrum uses the same dBFS reference as the firmware; volts axis approximate (3.1 V / 4095, uncalibrated) | ADC calibration API | Levels compare directly with FRAME logs; exact volts aren't needed for any requirement, only bias and clipping in counts |
 | | | | |
 
 ## Sources
