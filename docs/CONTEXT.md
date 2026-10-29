@@ -12,6 +12,7 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 ## Where things are
 
 - Repo: `~/esp/s1_labs/spectrum_visualiser` (git) → GitHub: https://github.com/JoeGould1878/spectrum_visualiser_lab
+- Lab test checklist (what to run, record, and which config value each test sets): `docs/LAB_TESTS.md`
 - Plan (Conceive + Design, requirements, tests, sessions, decision log): `docs/PLAN.md`; live doc https://claude.ai/artifact/BAJq52LbSn5nmyxJky5Ten
 - Brief: `docs/brief/MiniChallenge2-SpectrumVisualiser.pdf`
 - Environment: Debian 13, ESP-IDF v6, VS Code; board on `/dev/ttyACM0`
@@ -68,3 +69,4 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - **29 Oct:** Plan written from brief + Aidan/Casey blogs. Hardware confirmed. Repo private → ESP-IDF from scratch. Skeleton created. Joe chose to have Claude write the implementation for speed, with summaries after each step.
 - **29 Oct:** Joe confirmed teaching-lab framing and that a lab function generator is available. Wrote `max7219` driver (SPI mode 0, no DMA, whole chain per transaction, 1 MHz), all of `frame_gfx` incl. 3x5 font and 16-way orientation mapping (host-tested), and bring-up 01 (test mode → raw bits → orientation sweep → 5-min soak at 40 fps with write timing). Next: Joe runs bring-up 01; meanwhile Claude starts `adc_sampler` / bring-up 02.
 - **29 Oct (afternoon):** While Joe on break: adc_sampler + bring-up 02, pure components + tests, spectrum — committed one feature at a time with a review each (Joe asked for per-feature commits + reviews). All decisions logged in PLAN.md. Flagged: linear baseline uses N = 1024 / same range as full mode instead of Aidan's N = 512 (check with team).
+- **29 Oct:** Joe confirmed: start listening at power-up; linear baseline at N = 1024 / full range. Added `docs/LAB_TESTS.md` (kept updated per commit).
