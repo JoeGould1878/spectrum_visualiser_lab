@@ -34,15 +34,21 @@ Needs: `components/max7219` and the drawing parts of `components/frame_gfx` writ
 | CS | GPIO 10 |
 | CLK | GPIO 12 |
 
-Expected: all LEDs on in test mode → then single pixel → arrow → staircase.
+Expected (serial log says which step is running):
+
+1. **STEP 1** — all LEDs on for 3 s (hardware test mode).
+2. **STEP 2** — three single LEDs, 4 s each: **A** = chip 0 row-register 0 bit 7, **B** = same register bit 0, **C** = row-register 7 bit 7. Chip 0 is the one nearest the DIN pin.
+3. **STEP 3** — staircase shown in 16 orientations, 4 s each, each logged as `ORIENT k: REVERSE_DEVICES=… FLIP_X=… FLIP_Y=… TRANSPOSE=…`. The right one is a clean staircase rising from bottom-left (1 pixel) to top-right (8 pixels) in steps of 4 columns, with the input connector on the side you want as "left". If two look right, pick the one where the module's DIN is on the left.
+4. **STEP 4** — staircase with the `APP_ORIENT_*` values from `main/app_config.h`, rewritten 40×/s. A `SOAK …` line every 10 s gives write time (avg/max). After setting the flags, reflash and let it run 5 min.
 
 Record:
 
 - [ ] Photo: test mode (all on)
-- [ ] Which chip is chip 0, and which corner is its row 0 / bit 0
-- [ ] The `frame_orient_t` settings that make the arrow point at column 0 → copy into `main/app_config.h`
+- [ ] Photos of STEP 2 A, B, C (which chip is chip 0, which corner is row 0 / bit 7)
+- [ ] The `ORIENT k` number that looks right → copy its four flags into `APP_ORIENT_*` in `main/app_config.h`
 - [ ] Staircase photo, left = column 0
-- [ ] 5-minute run: any random pixels? (3.3 V logic into a 5 V chip — if yes, plan the 74HCT125 buffer)
+- [ ] Log of the 5-minute soak (`write_avg` / `write_max`); any random pixels? (3.3 V logic into a 5 V chip — if yes, plan the 74HCT125 buffer)
+- [ ] Optional: repeat the soak at `APP_MAX7219_CLOCK_HZ` = 4 MHz and 10 MHz; note the fastest that stays clean
 
 ## 02 — MAX9814 mic → ADC (`02_mic_adc/`)
 

@@ -11,7 +11,7 @@ Skeleton code in place (headers + build files, no implementation). Hardware is k
 | Board | Freenove ESP32-S3-WROOM (same as the hourglass) | Not the classic ESP32 Aidan used: no I2S-ADC mode, his pins (GPIO 34/23/18/5/27) don't map across. Unplug the camera ribbon to free GPIO 4–18. |
 | Input | MAX9814 electret mic module | Built-in automatic gain control (AGC); output sits on a 1.25 V bias with about 2 V peak-to-peak max. Nobody on the project has used it yet: Aidan's never arrived. |
 | Display | 4-in-1 MAX7219 module, 32 × 8 (photo) | 32 columns, 8 rows — same as Aidan's |
-| Other | Push button(s), resistors/caps from the kit; lab signal generator? | Confirm a function generator is available for the electrical test path |
+| Other | Push button(s), resistors/caps from the kit; lab function generator (confirmed) | Electrical test path is available |
 
 **Course repo not available** (github.com/caseyov/spectrumVisualiser is private), so the firmware is rebuilt from scratch in **ESP-IDF v6**, using Aidan's and Casey's blogs as the reference. The proposal and CDIO report are still Canvas-only.
 
@@ -189,9 +189,9 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 
 ## Open questions
 
-- [ ] Is a lab signal generator available for the electrical path?
+- [x] Is a lab signal generator available for the electrical path? **Yes** (Joe, 29/10)
 - [ ] Is there a 3.5 mm jack in the box, or mic only?
-- [ ] Product framing: teaching-lab instrument or music visualiser?
+- [x] Product framing: teaching-lab instrument or music visualiser? **Teaching-lab, accuracy first** (Joe, 29/10)
 - [ ] Which flagship: tone-finder, or something the team prefers?
 - [ ] Team split and who writes which part of the report
 
@@ -199,11 +199,14 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 
 | Date | Decision | Alternatives considered | Reason / evidence |
 | --- | --- | --- | --- |
-| 29/10 | Teaching-lab framing — *proposed* | Music-first visualiser | Brief rewards evidence and known limits |
-| 29/10 | Two input paths: electrical for exact tests, mic for the product — *proposed* | Mic only; generator only (Aidan) | Separates ADC/FFT errors from mic/speaker/room effects |
+| 29/10 | Teaching-lab framing (accuracy over looks) — confirmed by Joe | Music-first visualiser | Brief rewards evidence and known limits |
+| 29/10 | Two input paths: electrical for exact tests, mic for the product — lab function generator confirmed available | Mic only; generator only (Aidan) | Separates ADC/FFT errors from mic/speaker/room effects |
 | 29/10 | Hybrid log mapping — *proposed* | Linear (all previous prototypes); pure log | Pure log needs finer bins than we have at the bottom |
 | 29/10 | No software auto-gain — *proposed* | Software AGC | MAX9814 already has AGC; doubling it hides loudness |
 | 29/10 | Write firmware from scratch in ESP-IDF v6 | Adapt course repo code (Arduino-ESP32) | Repo is private and couldn't be obtained; IDF gives direct control of the S3's continuous ADC; toolchain already working from the hourglass |
+| 29/10 | MAX7219 driver: SPI mode 0, no DMA, one CS-low transaction per row register for the whole chain, 1 MHz to start | Bit-banged GPIO; DMA; one chip at a time | Datasheet timing (clocked on rising edge, latched on CS rising edge); ≤ 16 bytes per transfer so DMA adds nothing; writing all chips per transaction keeps them in step. Clock raised only after the soak test is clean |
+| 29/10 | Find orientation by sweeping all 16 `frame_orient_t` combinations on the matrix, plus three raw-bit photos | Guess, edit, reflash until right | One flash gives the answer and a photo record; the mapping logic is unit-tested on the laptop first |
+| 29/10 | Status-row layout in `frame_draw_status` is provisional (top-right pixels) | — | Real layout is a session-4 design decision; placeholder lets code build |
 | | | | |
 
 ## Sources

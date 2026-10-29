@@ -1,7 +1,7 @@
 # Spectrum visualiser — running context
 
 Kept by Claude so any new chat or Claude Code session can pick up where we left off. Updated after each step.
-**Last updated:** Thu 29 Oct 2026
+**Last updated:** Thu 29 Oct 2026 (bring-up 01 code)
 
 ## How we work
 
@@ -11,7 +11,7 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 
 ## Where things are
 
-- Repo: `~/Desktop/s1_labs/spectrum_visualiser` (git) → GitHub: *(add URL once pushed)*
+- Repo: `~/esp/s1_labs/spectrum_visualiser` (git) → GitHub: https://github.com/JoeGould1878/spectrum_visualiser_lab
 - Plan (Conceive + Design, requirements, tests, sessions, decision log): `docs/PLAN.md`; live doc https://claude.ai/artifact/BAJq52LbSn5nmyxJky5Ten
 - Brief: `docs/brief/MiniChallenge2-SpectrumVisualiser.pdf`
 - Environment: Debian 13, ESP-IDF v6, VS Code; board on `/dev/ttyACM0`
@@ -38,14 +38,17 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 ## Decided
 
 - ESP-IDF v6, from scratch (29/10)
-- Proposed (in plan, to confirm with evidence): teaching-lab "honest display" framing; two input paths (signal generator + mic); hybrid log mapping; no software AGC; tone-finder flagship
+- Teaching-lab "honest display" framing, accuracy over looks (Joe, 29/10)
+- Lab function generator available → two input paths (generator + mic) (29/10)
+- Proposed (to confirm with evidence): hybrid log mapping; no software AGC; tone-finder flagship
 
 ## Progress
 
 - [x] Brief + resources read; plan written (`docs/PLAN.md`)
 - [x] Repo skeleton: headers, CMake files, empty `.c` stubs, bring-up projects, host-test stubs (29/10). Claude built it with ESP-IDF v6.0.3: main project + both bring-ups compile with no warnings; `host_tests` make passes. (esp-dsp was taken from GitHub for that check because the component registry was blocked there — Joe's first build will download it from the registry and create `dependencies.lock`; commit that file.)
-- [ ] Push to GitHub
-- [ ] Bring-up 01 — matrix: write `max7219` driver + drawing parts of `frame_gfx`, find orientation ← **NEXT**
+- [x] Push to GitHub
+- [x] Bring-up 01 code: `max7219` driver, all of `frame_gfx` (+ host tests), bring-up program (29/10). Builds clean.
+- [ ] Bring-up 01 on hardware: Joe flashes, records orientation + soak result ← **NEXT**
 - [ ] Bring-up 02 — mic + ADC: write `adc_sampler`, measure real sample rate, raw logs at each gain
 - [ ] Pure components on laptop: `band_map`, `bar_model`, `tone_finder`, `frame_gfx` + host tests
 - [ ] `spectrum` (esp-dsp) → baseline (Aidan-style linear, N = 512)
@@ -53,11 +56,11 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 
 ## Open questions
 
-- Lab signal generator available?
 - 3.5 mm jack in the box, or mic only?
-- Teaching-lab vs music framing; flagship choice; team split
+- Flagship choice; team split
 - S3 continuous-ADC maximum rate (check `soc_caps.h`, then measure)
 
 ## Log
 
 - **29 Oct:** Plan written from brief + Aidan/Casey blogs. Hardware confirmed. Repo private → ESP-IDF from scratch. Skeleton created. Joe chose to have Claude write the implementation for speed, with summaries after each step.
+- **29 Oct:** Joe confirmed teaching-lab framing and that a lab function generator is available. Wrote `max7219` driver (SPI mode 0, no DMA, whole chain per transaction, 1 MHz), all of `frame_gfx` incl. 3x5 font and 16-way orientation mapping (host-tested), and bring-up 01 (test mode → raw bits → orientation sweep → 5-min soak at 40 fps with write timing). Next: Joe runs bring-up 01; meanwhile Claude starts `adc_sampler` / bring-up 02.
