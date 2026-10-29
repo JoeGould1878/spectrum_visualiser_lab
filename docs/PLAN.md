@@ -238,6 +238,10 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 | 29/10 | Peak dot drawn only when above the bar | Always draw | A dot inside a lit bar is invisible anyway |
 | 29/10 | DISPLAY line once a second: refresh rate, frame age (end of capture → written to LEDs, avg/max), SPI write time | Measure latency only with video | Gives the electronic part of the latency budget in numbers; the clap video then checks the total (R3) |
 | 29/10 | Debug lines built in a buffer and printed in one call | Several printf calls per line | Two tasks on two cores print; split calls could interleave mid-line and break the Python parser |
+| 29/10 | Buttons: MODE short = next mode (full → bass/voice → tone finder → linear), MODE long = next brightness step (0, 2, 5, 9, 15); LISTEN any press = stop/start listening | Separate brightness button; brightness in fine steps | Two buttons cover everything (R8); five brightness steps are easy to cycle and include 0 (lowest power) and 15 (bright room) |
+| 29/10 | `input_task_start()` now takes the loaded settings (header change) | Input task loads settings itself | main already loads them once; passing them in means the first button press steps from the real saved state, and NVS is read in one place |
+| 29/10 | Firmware prints its key settings at boot (rate, N, window, range, floor, dB/row, SPI clock) | Rely on notes | Every evidence log then records the configuration it was made with, so results can be compared after values change |
+| 29/10 | Firmware runs with no buttons wired (pull-ups hold the pins high) | — | Session-B tests can start before buttons are wired; the saved/default mode is used |
 | | | | |
 
 ## Sources

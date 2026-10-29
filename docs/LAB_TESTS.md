@@ -53,7 +53,11 @@ Wiring: MAX9814 VDD → 3.3V, GND → GND, OUT → GPIO 1. Gain pin: VDD = 40 dB
 
 ---
 
-## Session B — main firmware (code in progress: audio task next, then display, input, start-up)
+## Session B — main firmware (code ready; needs A1 orientation + A2 rate values set first)
+
+Wiring = A1 + A2 together. Buttons optional at first (to GND): MODE → GPIO 14, LISTEN → GPIO 21. Without buttons the firmware starts in full mode.
+At boot the log prints a `config:` line with the settings used — keep it in every evidence log.
+Modes (MODE short press): 0 full → 1 bass/voice → 2 tone finder → 3 linear. MODE long press = brightness. LISTEN = stop/start.
 
 ```bash
 idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test>.txt

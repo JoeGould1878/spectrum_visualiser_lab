@@ -54,7 +54,7 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - [ ] Bring-up 02 on hardware: rate sweep, raw logs at each gain
 - [x] Pure components + laptop tests: `band_map`, `bar_model`, `tone_finder` (29/10, `fdee253`)
 - [x] `spectrum` (esp-dsp): DC removal, decimation filter, Hann, dBFS (29/10, `f92bcea`). Not testable off-board.
-- [ ] Main app: plumbing (button, settings, debug_stream), audio_task, display_task, input_task, main
+- [x] Main app: plumbing (`a8ac360`), audio_task (`517849f`), display_task (`a143fb9`), input_task + main — full firmware builds (29/10)
 - [ ] Python tools for evidence
 - [ ] Core features → flagship → test plan → demo
 
