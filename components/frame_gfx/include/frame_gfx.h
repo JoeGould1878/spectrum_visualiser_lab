@@ -53,7 +53,11 @@ void frame_draw_bar(frame_t *f, int x, int height);
 /** Light a single pixel at row (peak_row - 1); 0 = no dot. */
 void frame_draw_peak(frame_t *f, int x, int peak_row);
 
-/** Draw status flags (frame_status_t bits) — exact layout TBD. */
+/**
+ * Draw status flags (frame_status_t bits) in the top-right corner: bit i lights
+ * pixel (31 - i, 7). While any flag is set, the top two rows of columns 28-31
+ * are cleared first so status pixels can't be confused with bars.
+ */
 void frame_draw_status(frame_t *f, uint32_t status_flags);
 
 /**

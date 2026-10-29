@@ -64,8 +64,10 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
   → **sets** `APP_FLOOR_DB` (a few dB above the typical quiet column level in `FRAME` lines) and `APP_TONE_MIN_DB`
 - [ ] Check R5: ≤ 1 lit pixel per column in silence (photo)
 
-### B2. Real frame rate and processing time
+### B2. Real frame rate, processing time, latency budget
 - [ ] From any log: `FRAME` lines per second (R4 ≥ 20), `process_us` column (FFT + mapping time), `RATE` lines (sample rate stable?)
+- [ ] `DISPLAY,<fps>,<age_avg_ms>,<age_max_ms>,<write_us>` lines: display refresh (expect ~40), frame age, SPI write time
+  → latency budget for the report: capture (25.6 ms at N = 1024) + age_avg ≈ electronic latency; compare with the clap video (B4)
 - [ ] Any `ADC buffer overflowed` warnings? If yes → raise `APP_DEBUG_EVERY_N_FRAMES`
 
 ### B3. Electrical input path (function generator) — needs a small circuit
@@ -84,7 +86,9 @@ Proposed circuit (confirm before building): generator → 10 µF cap → node bi
 - [ ] Music + speech demo videos: full mode vs linear mode (same song) — the linear vs hybrid comparison
 
 ### B5. Buttons and modes
-- [ ] Every mode via MODE button; long press changes brightness; LISTEN stops/starts (status pixel)
+- [ ] Every mode via MODE button; long press changes brightness; LISTEN stops/starts
+- [ ] Status pixels (top row, right): col 31 = silent, 30 = clipping, 29 = above range, 28 = not listening — trigger each (quiet room / loud clap / 12 kHz tone / LISTEN button), photo each
+- [ ] Tone-finder mode: digits readable? marker pixel under the right column?
 - [ ] Power-cycle: mode and brightness survive (R8); always comes back listening
 - [ ] Optional: USB power meter, brightness 0 vs 15 (sustainability point)
 

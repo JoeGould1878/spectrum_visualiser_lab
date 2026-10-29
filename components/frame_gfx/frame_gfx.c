@@ -78,11 +78,19 @@ void frame_draw_peak(frame_t *f, int x, int peak_row)
 }
 
 /*
- * PROVISIONAL layout until the status row is designed (core feature, session 4):
- * flag bit i lights the top-row pixel of column 31 - i.
+ * Status area = top two rows of the rightmost four columns (the 5.5-8 kHz
+ * columns, which rarely reach full height). While ANY flag is set, that area is
+ * cleared first, so a status pixel can never be mistaken for the top of a bar;
+ * row 6 stays dark as a gap. Flag bit i lights the top-row pixel of column 31 - i.
+ * With no flags set, bars draw there normally.
  */
 void frame_draw_status(frame_t *f, uint32_t status_flags)
 {
+    if ((status_flags & 0xFu) == 0) return;
+    for (int x = FRAME_COLS - 4; x < FRAME_COLS; x++) {
+        frame_set_pixel(f, x, FRAME_ROWS - 1, false);
+        frame_set_pixel(f, x, FRAME_ROWS - 2, false);
+    }
     for (int i = 0; i < 4; i++) {
         if (status_flags & (1u << i)) frame_set_pixel(f, FRAME_COLS - 1 - i, FRAME_ROWS - 1, true);
     }

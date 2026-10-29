@@ -9,6 +9,9 @@
  *   FRAME,<seq>,<t_ms>,<mode>,<status>,<process_us>,<c0_db>,...,<c31_db>
  *   TONE,<seq>,<hz>,<db>
  *   RATE,<measured_sample_rate_hz>
+ *   DISPLAY,<fps>,<frame_age_avg_ms>,<frame_age_max_ms>,<write_us>   (once a second)
+ *       frame_age = time from end of audio capture to the frame being written
+ *       to the matrix (part of the latency budget, R3); write_us = SPI write time
  *   RAW,<n>,<v0>,...,<vn-1>                (bring-up / mic checks only)
  *
  * Bring-up 02 only (printed directly from bringup/02_mic_adc):
@@ -32,4 +35,5 @@ bool debug_stream_enabled(void);
 
 void debug_stream_frame(const audio_frame_t *f);
 void debug_stream_rate(float measured_hz);
+void debug_stream_display(float fps, float age_avg_ms, float age_max_ms, uint32_t write_us);
 void debug_stream_raw(const uint16_t *raw, size_t n);

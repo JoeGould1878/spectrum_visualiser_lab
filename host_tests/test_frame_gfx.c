@@ -83,11 +83,20 @@ int main(void)
     frame_draw_text(&f, "8", -100);   /* fully off-screen: no crash, nothing drawn */
     CHECK(count_pixels(&f) == 0);
 
-    /* status (provisional layout) */
+    /* status: flags in the top-right, area cleared under them, bars untouched otherwise */
     frame_clear(&f);
     frame_draw_status(&f, FRAME_STATUS_SILENT | FRAME_STATUS_NOT_LISTENING);
     CHECK(frame_get_pixel(&f, 31, 7) && frame_get_pixel(&f, 28, 7));
     CHECK(count_pixels(&f) == 2);
+    frame_clear(&f);
+    for (int x = 0; x < 32; x++) frame_draw_bar(&f, x, 8);
+    frame_draw_status(&f, 0);
+    CHECK(count_pixels(&f) == 256);                 /* no flags: nothing changes */
+    frame_draw_status(&f, FRAME_STATUS_CLIPPING);
+    CHECK(frame_get_pixel(&f, 30, 7));              /* the flag */
+    CHECK(!frame_get_pixel(&f, 31, 7) && !frame_get_pixel(&f, 30, 6));   /* cleared area */
+    CHECK(frame_get_pixel(&f, 27, 7));              /* column 27 untouched */
+    CHECK(count_pixels(&f) == 256 - 8 + 1);
 
     /* orientation mapping */
     int idx, bit;
