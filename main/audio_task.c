@@ -2,7 +2,8 @@
  * @file audio_task.c
  * @brief Audio pipeline task — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  *
  * Frames are back to back (no overlap): at 40 kHz and N = 1024 one frame is
  * 25.6 ms of audio, so ~39 analysed frames per second (R4 needs >= 20).

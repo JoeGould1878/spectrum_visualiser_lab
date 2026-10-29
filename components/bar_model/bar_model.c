@@ -2,7 +2,8 @@
  * @file bar_model.c
  * @brief dB -> bar height with fast-rise / slow-fall and peak dots (pure C).
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: none adapted (standard VU-meter ballistics).
  */
 #include <string.h>

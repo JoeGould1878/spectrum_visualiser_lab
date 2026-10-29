@@ -3,6 +3,8 @@
  * @brief Machine-readable lines over serial, for logging tests to a file and
  *        plotting in Python (tools/).
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Plain printf lines (no ESP_LOG prefix) so they are easy to parse; any line
  * not starting with one of these tags is ignored by the tools.
  *

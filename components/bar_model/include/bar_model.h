@@ -3,6 +3,8 @@
  * @brief Column level in dB -> bar height (0..8) with smoothing and peak dots.
  *        Pure C — no ESP-IDF.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  *  - Scaling: rows = (col_db - floor_db) / db_per_row, clamped to 0..rows.
  *    floor_db is the noise floor MEASURED in a quiet room (requirement R5).
  *  - Smoothing: bars jump up immediately (fast rise) and fall at

@@ -2,7 +2,8 @@
  * @file frame_gfx.c
  * @brief 32 x 8 frame drawing — implementation (pure C).
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: 3x5 font drawn by hand for this project.
  */
 #include <stdio.h>

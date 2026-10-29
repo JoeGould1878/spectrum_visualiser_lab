@@ -2,7 +2,8 @@
  * @file display_task.c
  * @brief Display task — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  *
  * Every APP_DISPLAY_PERIOD_MS: take the newest audio frame if one arrived,
  * update the bar model (so bars keep falling between frames), draw, write.

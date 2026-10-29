@@ -2,6 +2,8 @@
  * @file button.h
  * @brief Debounced push button on one GPIO (to GND, internal pull-up).
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Polled, not interrupt-driven: the input task calls button_poll() every
  * ~10 ms. A press is reported once on release as SHORT or LONG.
  */

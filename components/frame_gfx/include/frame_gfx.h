@@ -3,6 +3,8 @@
  * @brief 32 x 8 picture in memory: bars, peak dots, status pixels, small text,
  *        and conversion to MAX7219 rows. Pure C — no ESP-IDF.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Coordinates: x = column 0..31 (0 = lowest frequency, left),
  *              y = row 0..7     (0 = bottom).
  * A frame stores one byte per column, bit y = pixel (x, y).

@@ -2,7 +2,8 @@
  * @file spectrum.c
  * @brief DC removal, decimation, window, FFT — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: esp-dsp (Espressif, Apache-2.0): dsps_fft2r_init_fc32,
  *   dsps_fft2r_fc32, dsps_bit_rev_fc32 and dsps_wind_hann_f32, used as in the
  *   esp-dsp "fft" example (real signal in the real parts, imaginary parts 0).

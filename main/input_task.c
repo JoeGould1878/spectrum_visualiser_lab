@@ -2,7 +2,8 @@
  * @file input_task.c
  * @brief Button task — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  *
  * Owns both buttons. Changes are passed on through audio_task_set_mode(),
  * audio_task_set_listening() and display_task_set_brightness(); mode and

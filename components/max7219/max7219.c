@@ -2,7 +2,8 @@
  * @file max7219.c
  * @brief MAX7219 chain driver — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: MAX7219 datasheet (register map, serial timing:
  * data clocked in on CLK rising edge, MSB first, latched on CS/LOAD rising
  * edge); ESP-IDF v6 SPI master driver documentation. No code adapted.

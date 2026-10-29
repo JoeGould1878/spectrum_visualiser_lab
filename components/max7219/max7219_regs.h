@@ -2,6 +2,8 @@
  * @file max7219_regs.h
  * @brief MAX7219 register map (private to this component).
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Every SPI transfer to one chip is 16 bits: [address (8)] [data (8)].
  * For a chain of N chips, shift N x 16 bits while CS is low, then raise CS:
  * the first 16 bits sent end up in the chip furthest from DIN.

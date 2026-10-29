@@ -2,7 +2,8 @@
  * @file tone_finder.c
  * @brief Strongest frequency with parabolic interpolation (pure C).
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: quadratic (parabolic) peak interpolation on log
  *   magnitude — standard method, e.g. J. O. Smith, "Spectral Audio Signal
  *   Processing", section "Quadratic Interpolation of Spectral Peaks".

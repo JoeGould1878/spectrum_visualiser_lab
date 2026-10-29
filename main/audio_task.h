@@ -2,6 +2,8 @@
  * @file audio_task.h
  * @brief Sampling -> spectrum -> columns -> audio_frame_t, on its own core.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Loop: adc_sampler_read() a frame, spectrum_compute(), band_map_apply(),
  * tone_find(), set status flags, then xQueueOverwrite() to the display.
  * Owns adc_sampler, spectrum and band_map — nothing else touches them.

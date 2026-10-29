@@ -2,6 +2,8 @@
  * @file band_map.h
  * @brief Which FFT bins feed which display column. Pure C — no ESP-IDF.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Two modes:
  *  - LINEAR: equal-width columns from f_min to f_max (what every previous
  *    prototype did — kept as the baseline for the before/after comparison).

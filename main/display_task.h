@@ -2,6 +2,8 @@
  * @file display_task.h
  * @brief Latest audio_frame_t -> bar_model -> frame_gfx -> MAX7219.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Runs every APP_DISPLAY_PERIOD_MS whether or not a new frame arrived, so
  * bars keep falling smoothly. Owns max7219 and bar_model.
  */

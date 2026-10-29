@@ -2,7 +2,8 @@
  * @file settings.c
  * @brief NVS settings — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: ESP-IDF NVS documentation (init / erase-and-retry
  *   pattern from the nvs_rw_value example).
  */

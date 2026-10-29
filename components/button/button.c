@@ -2,7 +2,8 @@
  * @file button.c
  * @brief Debounced button — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: none adapted (time-based debounce: the raw level
  *   must stay the same for debounce_ms before it counts).
  */

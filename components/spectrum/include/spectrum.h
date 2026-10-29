@@ -2,6 +2,8 @@
  * @file spectrum.h
  * @brief Raw ADC frame -> magnitude spectrum in dB.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Steps, in order (each one is a design decision with its own evidence):
  *   1. Frame stats on the raw samples (min/max for clipping, RMS for silence).
  *   2. Convert to float and remove the DC offset (MAX9814 bias ~1.25 V).

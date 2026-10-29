@@ -2,7 +2,8 @@
  * @file main.c
  * @brief Bring-up 01 — MAX7219 matrix.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  *
  * Steps (see bringup/README.md for wiring and what to record):
  *   1. Hardware test mode for 3 s -> every LED lit?

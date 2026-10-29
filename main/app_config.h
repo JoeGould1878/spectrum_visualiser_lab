@@ -2,6 +2,8 @@
  * @file app_config.h
  * @brief Every pin, rate and tunable number in one place.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Board: Freenove ESP32-S3-WROOM (camera ribbon UNPLUGGED — the camera uses
  * GPIO 4-13 and 15-18). Avoid: GPIO 2 (on-board LED), 0/3/45/46 (strapping),
  * 19/20 (USB), 35-37 (PSRAM).

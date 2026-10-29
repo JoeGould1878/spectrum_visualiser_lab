@@ -1,6 +1,8 @@
 /**
  * @file app_types.h
  * @brief Types shared between the application tasks.
+ *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
  */
 #pragma once
 

@@ -3,7 +3,8 @@
  * @brief Start-up order only — the work happens in the tasks.
  *
  * Spectrum Visualiser — Mini-Challenge 2 (CDIO)
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Sources and credits: see README.md
  *
  * Start-up order:

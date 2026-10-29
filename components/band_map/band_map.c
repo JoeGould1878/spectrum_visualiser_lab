@@ -2,7 +2,8 @@
  * @file band_map.c
  * @brief FFT bins -> display columns — implementation (pure C).
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: none adapted; method described in docs/PLAN.md.
  *
  * Bin k is centred on k * bin_hz and covers (k - 0.5 .. k + 0.5) * bin_hz.

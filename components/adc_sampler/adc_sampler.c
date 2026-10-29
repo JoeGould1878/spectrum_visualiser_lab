@@ -2,7 +2,8 @@
  * @file adc_sampler.c
  * @brief Continuous ADC sampling — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  * Credits / sources used: ESP-IDF v6 adc_continuous API documentation and the
  *   examples/peripherals/adc/continuous_read example (handle/config/pattern
  *   setup and the read-then-parse loop follow its structure; rewritten for one

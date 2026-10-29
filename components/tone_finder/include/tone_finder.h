@@ -3,6 +3,8 @@
  * @brief Strongest frequency in a spectrum, in Hz (flagship "tone-finder"
  *        mode). Pure C — no ESP-IDF.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Finds the loudest bin, then refines its position using the two neighbouring
  * bins (fitting a parabola through the three dB values), so the answer can
  * fall between bins. Accuracy is tested against known tones

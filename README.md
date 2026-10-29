@@ -60,6 +60,6 @@ cd host_tests && make
 - Previous prototypes, used as reference (no code reused): [Aidan Gan's project blog](https://aidangan.blogspot.com/2026/06/spectrum-visualiser-project-week-1-this.html), [Casey Overkleeft's Lab-in-a-Box blog](https://labinaboxcaseyov.blogspot.com/2026/06/day-1-spectrum-visualiser-research-and.html) (summarising Zhexi Zhang's report)
 - [esp-dsp](https://components.espressif.com/components/espressif/esp-dsp) (Espressif) for the FFT
 - ESP-IDF ADC continuous-mode documentation and examples
-- AI assistance: Claude (Anthropic) for planning, project skeleton and firmware implementation; the team specified, tested and evaluated it on hardware
+- AI use: plan and module interfaces (headers) developed by Joe Gould with Claude (Anthropic); firmware implemented by Claude against those interfaces; all requirements, design decisions, hardware testing and evaluation by the team. Every decision is recorded in the decision log in `docs/PLAN.md`; each source file's header states who designed and who implemented it.
 
 Any further code or ideas adapted are credited in the header of the file that uses them.

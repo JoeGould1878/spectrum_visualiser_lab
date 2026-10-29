@@ -1,6 +1,8 @@
 /**
  * @file settings.h
  * @brief User settings kept in NVS flash so they survive a reset (R8).
+ *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
  */
 #pragma once
 

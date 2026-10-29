@@ -2,6 +2,8 @@
  * @file max7219.h
  * @brief Driver for a chain of MAX7219 8x8 LED matrix modules over SPI.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Our display is a 4-in-1 module (4 chips daisy-chained = 32 x 8 pixels).
  * This driver only knows about chips and their 8 "digit" registers (rows);
  * it does not know which way round the module is mounted. Turning a

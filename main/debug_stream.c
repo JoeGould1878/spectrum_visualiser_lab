@@ -2,7 +2,8 @@
  * @file debug_stream.c
  * @brief Serial debug lines — implementation.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  */
 #include <stdio.h>
 #include "debug_stream.h"

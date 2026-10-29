@@ -2,7 +2,8 @@
  * @file main.c
  * @brief Bring-up 02 — MAX9814 mic -> continuous ADC.
  *
- * Author: Joe Gould, with Claude (Anthropic) writing the implementation
+ * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
+ *   reviewed and tested on hardware by Joe Gould
  *
  * Steps (see bringup/README.md for wiring and what to record):
  *   1. Rate sweep: for each requested rate, run 3 s while reading continuously

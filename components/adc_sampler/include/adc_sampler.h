@@ -2,6 +2,8 @@
  * @file adc_sampler.h
  * @brief Continuous (DMA) sampling of one ADC1 pin at a fixed rate.
  *
+ * Design and interface: Joe Gould, drafted with Claude (Anthropic)
+ *
  * Wraps ESP-IDF's ADC continuous-mode driver (esp_adc/adc_continuous.h).
  * Why not analogRead()/adc_oneshot? Aidan's prototype asked for 60 kHz that
  * way and only got ~12 kHz; the continuous driver is clocked by hardware and

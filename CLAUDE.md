@@ -45,7 +45,9 @@ Environment: Debian 13, ESP-IDF v6, VS Code. Board enumerates as `/dev/ttyACM0`.
 ## Conventions
 
 - C11, ESP-IDF style; public functions return `esp_err_t` where they can fail; `ESP_LOGx` with a `TAG` for human logs, `debug_stream` for machine-readable lines.
-- Each `.c` file header names the author and credits any source adapted (brief requirement).
+- Each file header credits authorship and any source adapted (brief requirement). Use exactly:
+  - `.h`: ` * Design and interface: Joe Gould, drafted with Claude (Anthropic)`
+  - `.c`: ` * Implementation: Claude (Anthropic), to Joe Gould's design and interface;` / ` *   reviewed and tested on hardware by Joe Gould`
 - Evidence (logs, photos, plots, videos) goes in `docs/evidence/` with dated names.
 
 ## Hardware notes
