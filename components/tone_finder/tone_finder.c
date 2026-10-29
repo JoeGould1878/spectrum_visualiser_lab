@@ -26,12 +26,18 @@ tone_t tone_find(const float *bin_db, int n_bins, float bin_hz, int min_bin, flo
     if (t.db < min_db) return t;
     t.valid = true;
 
-    /* Fit a parabola through (k-1, k, k+1); its top is the refined peak. */
-    if (k > 0 && k < n_bins - 1) {
+    /*
+     * Fit a parabola through (k-1, k, k+1); its top is the refined peak.
+     * Only when both neighbours are inside the searched range: a loud DC bin
+     * just below min_bin would otherwise drag the estimate down.
+     */
+    if (k > min_bin && k < n_bins - 1) {
         float a = bin_db[k - 1], b = bin_db[k], c = bin_db[k + 1];
         float denom = a - 2.0f * b + c;
         if (denom < 0.0f) {   /* proper maximum (curve bends down) */
-            float p = 0.5f * (a - c) / denom;   /* offset in bins, -0.5..0.5 */
+            float p = 0.5f * (a - c) / denom;   /* offset in bins */
+            if (p > 0.5f) p = 0.5f;             /* k is the max, so |p| <= 0.5 in theory; */
+            if (p < -0.5f) p = -0.5f;           /* clamp against rounding */
             t.hz = ((float)k + p) * bin_hz;
             t.db = b - 0.25f * (a - c) * p;
         }

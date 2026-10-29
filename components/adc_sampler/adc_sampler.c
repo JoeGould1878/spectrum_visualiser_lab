@@ -73,7 +73,10 @@ esp_err_t adc_sampler_init(const adc_sampler_cfg_t *cfg)
     adc_continuous_handle_cfg_t hcfg = {
         .max_store_buf_size = POOL_BYTES,
         .conv_frame_size = CONV_FRAME_BYTES,
-        .flags.flush_pool = 1,   /* if we fall behind, drop old data rather than stall */
+        /* If we fall behind and the pool fills, the driver throws away the WHOLE pool
+         * (~100 ms) and carries on with fresh data, rather than stalling. The frame
+         * being read at that moment then has a gap; adc_sampler_overflows() counts it. */
+        .flags.flush_pool = 1,
     };
     ESP_RETURN_ON_ERROR(adc_continuous_new_handle(&hcfg, &s_handle), TAG, "new_handle");
 

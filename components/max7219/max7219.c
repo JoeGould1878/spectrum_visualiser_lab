@@ -24,6 +24,7 @@ struct max7219_dev {
     spi_host_device_t host;
     spi_device_handle_t spi;
     int n_devices;
+    uint8_t intensity;   /* last value set, re-sent by max7219_resync() */
 };
 
 /*
@@ -97,12 +98,8 @@ esp_err_t max7219_init(const max7219_cfg_t *cfg, max7219_handle_t *out_handle)
     }
 
     /* Known state: the chips power up in an undefined state (datasheet). */
-    err = send_all(h, MAX7219_REG_DISPLAY_TEST, 0x00);
-    if (err == ESP_OK) err = send_all(h, MAX7219_REG_SCAN_LIMIT, 0x07);
-    if (err == ESP_OK) err = send_all(h, MAX7219_REG_DECODE_MODE, 0x00);
-    if (err == ESP_OK) err = max7219_clear(h);
-    if (err == ESP_OK) err = send_all(h, MAX7219_REG_INTENSITY, 0x00);
-    if (err == ESP_OK) err = send_all(h, MAX7219_REG_SHUTDOWN, 0x01);
+    err = max7219_clear(h);
+    if (err == ESP_OK) err = max7219_resync(h);
     if (err != ESP_OK) {
         max7219_deinit(h);
         ESP_RETURN_ON_ERROR(err, TAG, "chip setup");
@@ -118,7 +115,18 @@ esp_err_t max7219_set_intensity(max7219_handle_t h, uint8_t level)
 {
     ESP_RETURN_ON_FALSE(h, ESP_ERR_INVALID_ARG, TAG, "null handle");
     if (level > 15) level = 15;
+    h->intensity = level;
     return send_all(h, MAX7219_REG_INTENSITY, level);
+}
+
+esp_err_t max7219_resync(max7219_handle_t h)
+{
+    ESP_RETURN_ON_FALSE(h, ESP_ERR_INVALID_ARG, TAG, "null handle");
+    ESP_RETURN_ON_ERROR(send_all(h, MAX7219_REG_DISPLAY_TEST, 0x00), TAG, "test");
+    ESP_RETURN_ON_ERROR(send_all(h, MAX7219_REG_SCAN_LIMIT, 0x07), TAG, "scan");
+    ESP_RETURN_ON_ERROR(send_all(h, MAX7219_REG_DECODE_MODE, 0x00), TAG, "decode");
+    ESP_RETURN_ON_ERROR(send_all(h, MAX7219_REG_INTENSITY, h->intensity), TAG, "intensity");
+    return send_all(h, MAX7219_REG_SHUTDOWN, 0x01);
 }
 
 esp_err_t max7219_shutdown(max7219_handle_t h, bool shutdown)

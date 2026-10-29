@@ -56,6 +56,14 @@ int main(void)
     t = tone_find(db, N / 2, bin, 2, -50.0f);
     CHECK(t.bin == 10);
 
+    /* peak on min_bin itself, with a louder bin just below it: no interpolation
+     * towards the excluded bin (estimate stays at or above min_bin) */
+    for (int k = 0; k < N / 2; k++) db[k] = -100.0f;
+    db[1] = -8.0f; db[2] = -10.0f; db[3] = -30.0f;   /* old code: offset -0.61 bins, below min_bin */
+    t = tone_find(db, N / 2, bin, 2, -50.0f);
+    CHECK(t.valid && t.bin == 2);
+    CHECK(t.hz >= 2 * bin - 1e-3);
+
     /* real sines: error well under one bin (39 Hz) */
     const double tones[] = {150.0, 440.0, 1000.0, 1234.5, 3000.0, 7777.0};
     printf("  set Hz   found Hz   error Hz\n");

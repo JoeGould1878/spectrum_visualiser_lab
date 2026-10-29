@@ -10,6 +10,7 @@
  */
 #include <math.h>
 #include <stdatomic.h>
+#include <stdio.h>
 #include <string.h>
 #include "audio_task.h"
 #include "app_config.h"
@@ -92,6 +93,13 @@ static esp_err_t configure(app_mode_t m)
     ESP_LOGI(TAG, "mode %d: %u-pt FFT, decimate %d, %.2f Hz bins, %s %.0f-%.0f Hz",
              m, (unsigned)su.fft_n, su.decimate, spectrum_bin_hz(),
              su.map_mode == BAND_MAP_LINEAR ? "linear" : "hybrid log", su.f_min, su.f_max);
+    /* Column edges with the real bin width: the lookup table for the column-accuracy test (R2) */
+    char line[16 * BAND_MAP_MAX_COLS];
+    int len = 0;
+    for (int c = 0; c < s_map.cols && len < (int)sizeof(line) - 16; c++) {
+        len += snprintf(line + len, sizeof(line) - len, " %d:%.0f-%.0f", c, s_map.f_lo_hz[c], s_map.f_hi_hz[c]);
+    }
+    ESP_LOGI(TAG, "columns (Hz):%s", line);
     return ESP_OK;
 }
 
@@ -149,6 +157,7 @@ static void audio_task(void *arg)
         esp_err_t err = adc_sampler_read(s_raw, spectrum_input_len(), 1000);
         if (err != ESP_OK) {
             ESP_LOGW(TAG, "adc read: %s", esp_err_to_name(err));
+            vTaskDelay(pdMS_TO_TICKS(10));   /* never spin if the ADC keeps failing */
             continue;
         }
         f.t_us = esp_timer_get_time();

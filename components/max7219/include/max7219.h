@@ -65,6 +65,14 @@ esp_err_t max7219_clear(max7219_handle_t h);
  */
 esp_err_t max7219_write_all(max7219_handle_t h, const uint8_t *rows);
 
+/**
+ * Re-send every control register (test mode off, scan limit, no decode,
+ * last intensity, out of shutdown). A glitch on the 3.3 V data line can flip
+ * one of these and leave the display wrong until reset; calling this every
+ * second or so recovers. A mitigation, not a fix: count glitches first.
+ */
+esp_err_t max7219_resync(max7219_handle_t h);
+
 /** Release the SPI device and bus. */
 void max7219_deinit(max7219_handle_t h);
 

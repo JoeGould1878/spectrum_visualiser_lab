@@ -90,6 +90,8 @@ static void display_task(void *arg)
 
     audio_frame_t latest = {0};
     bool have_frame = false;
+    int64_t last_fresh_us = 0;
+    int64_t next_resync_us = esp_timer_get_time() + APP_DISPLAY_RESYNC_MS * 1000LL;
     app_mode_t last_mode = APP_MODE_COUNT;
     unsigned brightness = 0xFF;
     uint8_t rows[APP_MAX7219_DEVICES * 8];
@@ -113,8 +115,21 @@ static void display_task(void *arg)
             brightness = want_b;
         }
 
+        if (now >= next_resync_us) {
+            max7219_resync(s_disp);
+            next_resync_us = now + APP_DISPLAY_RESYNC_MS * 1000LL;
+        }
+
         bool fresh = xQueueReceive(s_in, &latest, 0) == pdTRUE;
-        if (fresh) have_frame = true;
+        if (fresh) {
+            have_frame = true;
+            last_fresh_us = now;
+        } else if (have_frame && now - last_fresh_us > APP_DISPLAY_STALE_MS * 1000LL) {
+            /* Audio stopped arriving: show nothing rather than a frozen picture. */
+            ESP_LOGW(TAG, "no audio frame for %d ms: blanking", APP_DISPLAY_STALE_MS);
+            have_frame = false;
+            bar_model_init(&s_bars, &bcfg, APP_DISPLAY_COLS);
+        }
 
         frame_t fr;
         frame_clear(&fr);

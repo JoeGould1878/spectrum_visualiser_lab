@@ -77,11 +77,13 @@
 #define APP_AUDIO_TASK_STACK     8192
 #define APP_DISPLAY_TASK_CORE    1
 #define APP_DISPLAY_TASK_PRIO    5
-#define APP_DISPLAY_TASK_STACK   4096
+#define APP_DISPLAY_TASK_STACK   6144       /* float printf + frame buffers; raised from 4096 at review */
 #define APP_DISPLAY_PERIOD_MS    25         /* 40 fps redraw */
+#define APP_DISPLAY_STALE_MS     500        /* no new audio frame for this long -> blank, not frozen */
+#define APP_DISPLAY_RESYNC_MS    1000       /* re-send MAX7219 control registers (glitch recovery) */
 #define APP_INPUT_TASK_CORE      1
 #define APP_INPUT_TASK_PRIO      3
-#define APP_INPUT_TASK_STACK     3072
+#define APP_INPUT_TASK_STACK     4096       /* NVS writes + logging; raised from 3072 at review */
 #define APP_INPUT_PERIOD_MS      10
 
 /* ---------------- Buttons / settings ---------------- */
