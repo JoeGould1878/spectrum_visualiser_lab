@@ -26,7 +26,7 @@ Wiring: VCC → 5V, GND → GND, DIN → 11, CS → 10, CLK → 12.
 - [ ] STEP 2 photos A, B, C (single LEDs) → which chip is chip 0, which corner
 - [ ] STEP 3: number `k` of the clean staircase (rises bottom-left → top-right)
   → **sets** `APP_ORIENT_REVERSE_DEVICES / FLIP_X / FLIP_Y / TRANSPOSE` (copy the four flags from the `ORIENT k` line)
-- [ ] Reflash with the flags set, STEP 4 soak 5 min: any random pixels? note `write_avg` / `write_max`
+- [ ] Reflash with the flags set (it runs steps 1–3 again first, ~80 s, then STEP 4), soak 5 min: any random pixels? note `write_avg` / `write_max`. The bring-up does **not** re-send control registers, so any glitch stays visible here (the main firmware re-sends them every second)
   → evidence for the 3.3 V-logic risk; `write_avg` goes in the latency budget
 - [ ] Optional: soak again at `APP_MAX7219_CLOCK_HZ` = 4 MHz and 10 MHz → **sets** the clock (fastest clean one, or stay at 1 MHz)
 
@@ -76,8 +76,9 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 - [ ] Any `ADC buffer overflowed` warnings? If yes → raise `APP_DEBUG_EVERY_N_FRAMES`
 
 ### B3. Electrical input path (function generator) — needs a small circuit
-Proposed circuit (confirm before building): generator → 10 µF cap → node biased at 1.65 V by two 10 kΩ resistors (3.3 V to GND) → 1 kΩ → GPIO 1, with 15 nF from GPIO 1 to GND (low-pass ≈ 10.6 kHz). **Mic unplugged from GPIO 1 while using this.** Generator: sine, **1 Vpp, 0 V offset**.
-- [ ] Column accuracy (R2): tone at the centre of every 4th column (centres from `test_band_map` table) — note which column lights
+Proposed circuit (confirm before building): generator → 10 µF cap → node biased at 1.65 V by two 10 kΩ resistors (3.3 V to GND) → 1 kΩ → GPIO 1, with **2.2 nF** from GPIO 1 to GND. **Mic unplugged from GPIO 1 while using this.** Generator: sine, **1 Vpp, 0 V offset** (pin sees 1.15–2.15 V).
+Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series with the 1 kΩ, so the low-pass is set by 6 kΩ × C: 2.2 nF → f_c = 1 / (2π · 6 kΩ · 2.2 nF) ≈ 12 kHz, above the 8 kHz display range and below Nyquist (20 kHz). The 10 µF with 5 kΩ gives a high-pass at ≈ 3 Hz, so no bass is lost. (An earlier draft said 15 nF, which with the 6 kΩ would cut off at ≈ 1.8 kHz — wrong.) A single RC only gives ≈ −5 dB at 20 kHz: enough to *show* the aliasing improvement, not remove it.
+- [ ] Column accuracy (R2): tone at the centre of every 4th column — note which column lights. Use the `columns (Hz):` line the firmware prints at boot and on every mode change (it uses the measured sample rate; the `test_band_map` table assumes exactly 40 kHz)
 - [ ] Tone-finder accuracy: 100, 200, 440, 1000, 2000, 5000, 7500 Hz — one log per tone (`capture.sh B3_tone440` …), then `tools/tone_stats.py LOG --set-hz F --path electrical --csv docs/evidence/accuracy.csv` per log, then `tools/plot_accuracy.py docs/evidence/accuracy.csv`
 - [ ] Frequency response (R1): 50 Hz → 20 kHz in steps, same amplitude — peak column level vs frequency
 - [ ] Leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 — how many neighbouring columns light
