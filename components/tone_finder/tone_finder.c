@@ -1,12 +1,39 @@
 /**
  * @file tone_finder.c
- * @brief Peak search + 3-point interpolation — implementation (pure C).
+ * @brief Strongest frequency with parabolic interpolation (pure C).
  *
  * Author: Joe Gould, with Claude (Anthropic) writing the implementation
- * Credits / sources used: (fill in — e.g. the parabolic-interpolation formula's source)
- *
- * STATUS: skeleton only. Write and test on the laptop first (host_tests/).
+ * Credits / sources used: quadratic (parabolic) peak interpolation on log
+ *   magnitude — standard method, e.g. J. O. Smith, "Spectral Audio Signal
+ *   Processing", section "Quadratic Interpolation of Spectral Peaks".
  */
 #include "tone_finder.h"
 
-/* TODO: tone_find  (loudest bin, then refine with its two neighbours) */
+tone_t tone_find(const float *bin_db, int n_bins, float bin_hz, int min_bin, float min_db)
+{
+    tone_t t = { .valid = false, .bin = -1, .hz = 0.0f, .db = -1000.0f };
+    if (min_bin < 0) min_bin = 0;
+    if (n_bins <= min_bin) return t;
+
+    int k = min_bin;
+    for (int i = min_bin + 1; i < n_bins; i++) {
+        if (bin_db[i] > bin_db[k]) k = i;
+    }
+    t.bin = k;
+    t.db = bin_db[k];
+    t.hz = (float)k * bin_hz;
+    if (t.db < min_db) return t;
+    t.valid = true;
+
+    /* Fit a parabola through (k-1, k, k+1); its top is the refined peak. */
+    if (k > 0 && k < n_bins - 1) {
+        float a = bin_db[k - 1], b = bin_db[k], c = bin_db[k + 1];
+        float denom = a - 2.0f * b + c;
+        if (denom < 0.0f) {   /* proper maximum (curve bends down) */
+            float p = 0.5f * (a - c) / denom;   /* offset in bins, -0.5..0.5 */
+            t.hz = ((float)k + p) * bin_hz;
+            t.db = b - 0.25f * (a - c) * p;
+        }
+    }
+    return t;
+}
