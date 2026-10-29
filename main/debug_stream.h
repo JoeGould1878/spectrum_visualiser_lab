@@ -11,6 +11,13 @@
  *   RATE,<measured_sample_rate_hz>
  *   RAW,<n>,<v0>,...,<vn-1>                (bring-up / mic checks only)
  *
+ * Bring-up 02 only (printed directly from bringup/02_mic_adc):
+ *   RATE_TEST,<requested_hz>,<measured_hz>,<overflows>
+ *   STATS,<mean>,<min>,<max>,<rms>          (raw counts; rms after removing the mean)
+ *
+ * Units: t_ms = ms since boot; c*_db and TONE db = dBFS (0 = full-scale sine);
+ * status = frame_status_t bits; mode = app_mode_t number.
+ *
  * Capture:  idf.py -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<name>.txt
  */
 #pragma once

@@ -28,6 +28,7 @@ typedef struct {
     int        cols;
     float      col_db[BAND_MAP_MAX_COLS];  /**< level per display column */
     tone_t     tone;                       /**< strongest tone (all modes) */
+    int        tone_col;                   /**< column the tone falls in, -1 if outside the map */
     uint32_t   status;                     /**< frame_status_t bits */
     uint32_t   process_us;                 /**< time spent in FFT + mapping */
 } audio_frame_t;

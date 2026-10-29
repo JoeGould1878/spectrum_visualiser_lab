@@ -33,17 +33,23 @@
 #define APP_ORIENT_TRANSPOSE        false
 
 /* ---------------- Sampling and FFT ---------------- */
-#define APP_SAMPLE_RATE_HZ       40000   /* requested; check S3 limit in soc_caps.h */
-#define APP_FFT_N                1024    /* bins = N/2; bin width = rate / N */
+#define APP_SAMPLE_RATE_HZ       40000   /* requested; S3 allows 611..83333 (SOC_ADC_SAMPLE_FREQ_THRES_*) */
+#define APP_SAMPLE_RATE_ACTUAL_HZ 40000  /* MEASURE: RATE value from bring-up 02 — used for all Hz maths */
+#define APP_FFT_N                1024    /* full/tone/linear modes: bins = N/2; bin width = rate / N */
+#define APP_FFT_N_BASS           512     /* bass/voice mode, after decimation: 2048 raw samples = 51 ms */
 #define APP_DECIMATE_FULL        1
 #define APP_DECIMATE_BASS        4       /* bass/voice mode: 10 kHz effective */
-#define APP_USE_WINDOW           1       /* Hann on (leakage test turns it off) */
+#define APP_USE_WINDOW           1       /* Hann on (leakage test: set 0, reflash, compare) */
 
 /* ---------------- Column mapping ---------------- */
 #define APP_FULL_F_MIN_HZ        100.0f
 #define APP_FULL_F_MAX_HZ        8000.0f
 #define APP_BASS_F_MIN_HZ        50.0f
 #define APP_BASS_F_MAX_HZ        2500.0f
+/* Linear baseline uses the full-mode range and FFT size, so a linear vs hybrid
+ * comparison changes only the mapping (one variable at a time). */
+#define APP_LINEAR_F_MIN_HZ      APP_FULL_F_MIN_HZ
+#define APP_LINEAR_F_MAX_HZ      APP_FULL_F_MAX_HZ
 
 /* ---------------- Levels (MEASURE) ---------------- */
 #define APP_FLOOR_DB             (-60.0f)   /* MEASURE: quiet-room noise floor */
@@ -56,6 +62,11 @@
 #define APP_SILENCE_RMS          8.0f       /* MEASURE: raw counts */
 #define APP_CLIP_MARGIN          16         /* raw within this of 0 or 4095 = clipping */
 #define APP_TONE_MIN_DB          (-50.0f)   /* MEASURE: tone-finder "nothing there" level */
+#define APP_TONE_F_MIN_HZ        50.0f      /* tone-finder ignores bins below this (DC, rumble) */
+#define APP_TONE_DISPLAY_MS      250        /* digits update 4x/s so they're readable */
+/* "Above range" pixel: strongest peak above the displayed range is louder than
+ * APP_TONE_MIN_DB and within this many dB of the strongest in-range column. */
+#define APP_ABOVE_RANGE_MARGIN_DB 6.0f
 
 /* ---------------- Tasks ---------------- */
 /* Audio (sampling + FFT) on core 0, display + buttons on core 1 */
@@ -71,5 +82,13 @@
 #define APP_INPUT_TASK_STACK     3072
 #define APP_INPUT_PERIOD_MS      10
 
+/* ---------------- Buttons / settings ---------------- */
+#define APP_BTN_DEBOUNCE_MS      30
+#define APP_BTN_LONG_MS          800
+#define APP_MODE_DEFAULT         APP_MODE_FULL   /* used until a mode is saved */
+/* Long press on MODE steps through these brightness levels */
+#define APP_BRIGHTNESS_STEPS     {0, 2, 5, 9, 15}
+
 /* ---------------- Debug ---------------- */
 #define APP_DEBUG_STREAM_DEFAULT 1          /* print FRAME/TONE lines over serial */
+#define APP_DEBUG_EVERY_N_FRAMES 1          /* 1 = every frame (~39/s); raise if the serial link can't keep up */
