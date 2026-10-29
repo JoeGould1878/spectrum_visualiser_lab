@@ -1,0 +1,76 @@
+<title>Spectrum Visualiser Diagrams</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: one technical-drawing column; each figure is a plate with its own caption and a sideways-scrolling canvas. */
+:root {
+  --sans: 'IBM Plex Sans', 'DejaVu Sans', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', 'DejaVu Sans Mono', Consolas, monospace;
+  --display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', Arial, sans-serif;
+  --bg: #eef1f4; --plate: #f8fafb; --rule: #cfd7df; --fg: #16202b; --fg-2: #5d6b7b; --accent: #1f6f8b;
+  --d-bg: #f8fafb; --d-panel: #ffffff; --d-ctr: #eef2f6; --d-ink: #16202b; --d-ink2: #3d4a59; --d-muted: #5d6b7b;
+  --d-line: #9aa7b5; --d-acc: #1f6f8b; --d-acct: #e3f0f5; --d-sig: #0f7b6c; --d-spi: #3655b3; --d-p3: #c2410c;
+  --d-p5: #b3261e; --d-gnd: #55606d; --d-led: #c8302c; --d-q: #fff7e0; --d-qline: #b98a12;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1116; --plate: #131a21; --rule: #2a3542; --fg: #e4e9ef; --fg-2: #93a1b0; --accent: #5bb4d1;
+    --d-bg: #131a21; --d-panel: #18212b; --d-ctr: #111820; --d-ink: #e4e9ef; --d-ink2: #b4bfcb; --d-muted: #93a1b0;
+    --d-line: #3e4b5b; --d-acc: #5bb4d1; --d-acct: #13303b; --d-sig: #34c3ae; --d-spi: #8ea5ff; --d-p3: #fb8a4c;
+    --d-p5: #f87171; --d-gnd: #8b96a3; --d-led: #ff5a52; --d-q: #2a2412; --d-qline: #c99a2e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1116; --plate: #131a21; --rule: #2a3542; --fg: #e4e9ef; --fg-2: #93a1b0; --accent: #5bb4d1;
+  --d-bg: #131a21; --d-panel: #18212b; --d-ctr: #111820; --d-ink: #e4e9ef; --d-ink2: #b4bfcb; --d-muted: #93a1b0;
+  --d-line: #3e4b5b; --d-acc: #5bb4d1; --d-acct: #13303b; --d-sig: #34c3ae; --d-spi: #8ea5ff; --d-p3: #fb8a4c;
+  --d-p5: #f87171; --d-gnd: #8b96a3; --d-led: #ff5a52; --d-q: #2a2412; --d-qline: #c99a2e;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px;
+  display: grid; gap: 28px;
+}
+.head { display: grid; gap: 10px; }
+.kicker { font: 600 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font: 600 clamp(28px, 4.2vw, 40px)/1.1 var(--display); text-wrap: balance; }
+.lede { margin: 0; max-width: 65ch; color: var(--fg-2); font-size: 15px; line-height: 1.55; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; }
+nav a {
+  font: 500 13px var(--sans); color: var(--fg); text-decoration: none;
+  padding: 6px 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--plate);
+}
+nav a:hover, nav a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.fig { background: var(--plate); border: 1px solid var(--rule); border-radius: 10px; display: grid; }
+.fig header { padding: 18px 20px 6px; display: grid; gap: 4px; min-width: 0; }
+.fig h2 { margin: 0; font: 600 20px var(--display); text-wrap: balance; }
+.fig p { margin: 0; color: var(--fg-2); font-size: 14px; line-height: 1.5; max-width: 75ch; }
+.scroll { overflow-x: auto; padding: 8px 12px 16px; }
+.scroll svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.foot { color: var(--fg-2); font-size: 13px; line-height: 1.55; max-width: 75ch; }
+.foot code { font-family: var(--mono); font-size: 12.5px; }
+/*DIAGRAM_CSS*/
+</style>
+<div class="wrap">
+  <div class="head">
+    <div class="kicker">Mini-Challenge 2 · spectrum_visualiser_lab</div>
+    <h1>Spectrum Visualiser Diagrams</h1>
+    <p class="lede">Wiring, hardware and firmware for the ESP32-S3 + MAX9814 + 32 × 8 MAX7219 build, drawn from the code and docs in the repo as of commit 2d3cdcb.</p>
+    <nav aria-label="Diagrams">
+      <a href="#circuit">Wiring</a>
+      <a href="#hw-overview">Hardware overview</a>
+      <a href="#hw-detail">Hardware detail</a>
+      <a href="#fw-overview">Firmware overview</a>
+      <a href="#fw-detail">Firmware detail</a>
+    </nav>
+  </div>
+<!--SECTIONS-->
+  <p class="foot">Pins and values from <code>main/app_config.h</code>; the test-input values from <code>docs/LAB_TESTS.md</code>. Values marked MEASURE in the config (noise floor, thresholds, real sample rate) are still placeholders until the lab tests set them.</p>
+</div>

@@ -83,7 +83,7 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 - [ ] Frequency response (R1): 50 Hz → 20 kHz in steps, same amplitude — peak column level vs frequency
 - [ ] Leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 — how many neighbouring columns light
 - [ ] Two-tone resolution (if the generator has two channels, or generator + phone): full vs bass/voice mode
-- [ ] Aliasing (R6): 25 kHz and 30 kHz tones — where do they show up? With and without the 15 nF cap
+- [ ] Aliasing (R6): 25 kHz and 30 kHz tones — where do they show up? With and without the 2.2nF cap
 
 ### B4. Acoustic path (phone tone app → speaker → mic)
 - [ ] Same tone list as B3, phone at fixed distance (note it) — `tone_stats.py … --path acoustic` into the same CSV, so the plot compares both paths

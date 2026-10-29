@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 392" width="1000" height="392" role="img" aria-label="Spectrum visualiser · hardware overview"><defs>
+<marker id="ar-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk"/></marker>
+<marker id="ar-sig" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk-sig"/></marker>
+<marker id="ar-spi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk-spi"/></marker>
+</defs><style>
+.t{fill:#16202b;font:13px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.th{fill:#16202b;font:600 17px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tb{fill:#16202b;font:600 14px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tb2{fill:#16202b;font:600 13px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.ts{fill:#5d6b7b;font:11.5px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tm{fill:#16202b;font:12px 'IBM Plex Mono','DejaVu Sans Mono',Consolas,monospace}
+.tmb{fill:#16202b;font:600 12.5px 'IBM Plex Mono','DejaVu Sans Mono',Consolas,monospace}
+.bx{fill:#ffffff;stroke:#9aa7b5;stroke-width:1.2}
+.bx-acc{fill:#e3f0f5;stroke:#1f6f8b;stroke-width:1.6}
+.bx-dash{fill:none;stroke:#9aa7b5;stroke-width:1.2;stroke-dasharray:6 4}
+.ctr{fill:#eef2f6;stroke:#9aa7b5;stroke-width:1.2}
+.q{fill:#fff7e0;stroke:#b98a12}
+.pill{fill:#ffffff;stroke:#9aa7b5;stroke-width:1.2}
+.res{fill:#ffffff;stroke:#3d4a59;stroke-width:1.5}
+.cap{fill:none;stroke:#3d4a59;stroke-width:1.5}
+.grid{fill:#16181b;stroke:#9aa7b5}
+.led{fill:#c8302c}
+.pin{fill:#ffffff;stroke:#3d4a59;stroke-width:1.5}
+.w{fill:none;stroke:#3d4a59;stroke-width:1.6}
+.w-ink2{stroke:#3d4a59}
+.w-sig{stroke:#0f7b6c;stroke-width:2}
+.w-spi{stroke:#3655b3;stroke-width:2}
+.w-p3{stroke:#c2410c;stroke-width:2}
+.w-p5{stroke:#b3261e;stroke-width:2}
+.w-gnd{stroke:#55606d}
+.dash{stroke-dasharray:6 4}
+.dot{fill:#3d4a59}
+.mk{fill:#3d4a59}
+.mk-sig{fill:#0f7b6c}
+.mk-spi{fill:#3655b3}
+</style><rect width="100%" height="100%" fill="#f4f6f8"/><text x="24" y="34" class="th">Spectrum visualiser · hardware overview</text><rect x="24" y="90" width="170" height="100" rx="6" class="bx"/><text x="109.0" y="126" class="tb" text-anchor="middle">Sound source</text><text x="109.0" y="145" class="ts" text-anchor="middle">voice, music, phone tone</text><text x="109.0" y="164" class="ts" text-anchor="middle">or function generator</text><rect x="250" y="90" width="190" height="100" rx="6" class="bx"/><text x="345.0" y="126" class="tb" text-anchor="middle">Input stage</text><text x="345.0" y="145" class="ts" text-anchor="middle">MAX9814 mic + AGC</text><text x="345.0" y="164" class="ts" text-anchor="middle">or bias + RC test input</text><rect x="520" y="90" width="230" height="100" rx="6" class="bx bx-acc"/><text x="635.0" y="126" class="tb" text-anchor="middle">ESP32-S3</text><text x="635.0" y="145" class="ts" text-anchor="middle">samples at 40 kHz, FFT,</text><text x="635.0" y="164" class="ts" text-anchor="middle">maps 32 columns, reads buttons</text><rect x="800" y="90" width="176" height="100" rx="6" class="bx"/><text x="888.0" y="126" class="tb" text-anchor="middle">LED display</text><text x="888.0" y="145" class="ts" text-anchor="middle">4 × MAX7219, 32 × 8</text><text x="888.0" y="164" class="ts" text-anchor="middle">one column per band</text><path d="M194 140.0L250 140.0" class="w w-sig" marker-end="url(#ar-sig)"/><text x="222.0" y="132.0" class="ts" text-anchor="middle">sound</text><path d="M440 140.0L520 140.0" class="w w-sig" marker-end="url(#ar-sig)"/><text x="480.0" y="132.0" class="ts" text-anchor="middle">analogue</text><path d="M750 140.0L800 140.0" class="w w-spi" marker-end="url(#ar-spi)"/><text x="775.0" y="132.0" class="ts" text-anchor="middle">SPI</text><rect x="470" y="270" width="150" height="64" rx="6" class="bx"/><text x="545.0" y="297" class="tb" text-anchor="middle">Buttons × 2</text><text x="545.0" y="316" class="ts" text-anchor="middle">mode · listen</text><path d="M560 270L560 190" class="w w-ink2" marker-end="url(#ar-ink)"/><rect x="650" y="270" width="210" height="64" rx="6" class="bx"/><text x="755.0" y="297" class="tb" text-anchor="middle">Laptop (USB-C)</text><text x="755.0" y="316" class="ts" text-anchor="middle">5 V power · flash · serial logs</text><path d="M700 270L700 190" class="w w-ink2" marker-end="url(#ar-ink)"/><path d="M700 190L700 270" class="w w-ink2" marker-end="url(#ar-ink)"/><text x="500" y="372" class="ts" text-anchor="middle">Power: USB 5 V → board 3.3 V regulator → ESP32-S3 and mic.  5 V goes straight to the display.</text></svg>

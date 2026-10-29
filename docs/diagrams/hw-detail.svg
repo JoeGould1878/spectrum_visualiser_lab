@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 596" width="1000" height="596" role="img" aria-label="Spectrum visualiser · hardware detail"><defs>
+<marker id="ar-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk"/></marker>
+<marker id="ar-sig" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk-sig"/></marker>
+<marker id="ar-spi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="mk-spi"/></marker>
+</defs><style>
+.t{fill:#16202b;font:13px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.th{fill:#16202b;font:600 17px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tb{fill:#16202b;font:600 14px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tb2{fill:#16202b;font:600 13px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.ts{fill:#5d6b7b;font:11.5px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.tm{fill:#16202b;font:12px 'IBM Plex Mono','DejaVu Sans Mono',Consolas,monospace}
+.tmb{fill:#16202b;font:600 12.5px 'IBM Plex Mono','DejaVu Sans Mono',Consolas,monospace}
+.bx{fill:#ffffff;stroke:#9aa7b5;stroke-width:1.2}
+.bx-acc{fill:#e3f0f5;stroke:#1f6f8b;stroke-width:1.6}
+.bx-dash{fill:none;stroke:#9aa7b5;stroke-width:1.2;stroke-dasharray:6 4}
+.ctr{fill:#eef2f6;stroke:#9aa7b5;stroke-width:1.2}
+.q{fill:#fff7e0;stroke:#b98a12}
+.pill{fill:#ffffff;stroke:#9aa7b5;stroke-width:1.2}
+.res{fill:#ffffff;stroke:#3d4a59;stroke-width:1.5}
+.cap{fill:none;stroke:#3d4a59;stroke-width:1.5}
+.grid{fill:#16181b;stroke:#9aa7b5}
+.led{fill:#c8302c}
+.pin{fill:#ffffff;stroke:#3d4a59;stroke-width:1.5}
+.w{fill:none;stroke:#3d4a59;stroke-width:1.6}
+.w-ink2{stroke:#3d4a59}
+.w-sig{stroke:#0f7b6c;stroke-width:2}
+.w-spi{stroke:#3655b3;stroke-width:2}
+.w-p3{stroke:#c2410c;stroke-width:2}
+.w-p5{stroke:#b3261e;stroke-width:2}
+.w-gnd{stroke:#55606d}
+.dash{stroke-dasharray:6 4}
+.dot{fill:#3d4a59}
+.mk{fill:#3d4a59}
+.mk-sig{fill:#0f7b6c}
+.mk-spi{fill:#3655b3}
+</style><rect width="100%" height="100%" fill="#f4f6f8"/><text x="24" y="34" class="th">Spectrum visualiser · hardware detail</text><rect x="240" y="66" width="520" height="420" rx="10" class="ctr"/><text x="256" y="90" class="tb">ESP32-S3 · dual core, 240 MHz</text><rect x="24" y="110" width="196" height="80" rx="6" class="bx"/><text x="38" y="132" class="tb">MAX9814 + capsule</text><text x="38" y="149" class="ts">preamp + AGC, 40/50/60 dB</text><text x="38" y="166" class="ts">out 1.25 V ± 1 V max</text><rect x="24" y="250" width="196" height="70" rx="6" class="bx"/><text x="38" y="272" class="tb">Buttons SW1, SW2</text><text x="38" y="289" class="ts">MODE, LISTEN · to GND</text><rect x="24" y="400" width="196" height="70" rx="6" class="bx"/><text x="38" y="422" class="tb">Laptop</text><text x="38" y="439" class="ts">idf.py monitor · tools/*.py</text><rect x="260" y="110" width="140" height="70" rx="6" class="bx"/><text x="274" y="132" class="tb">ADC1</text><text x="274" y="149" class="ts">12-bit SAR, 12 dB</text><text x="274" y="166" class="ts">continuous + DMA</text><rect x="430" y="110" width="160" height="70" rx="6" class="bx bx-acc"/><text x="444" y="132" class="tb">Core 0</text><text x="444" y="149" class="ts">sampling + FFT</text><text x="444" y="166" class="ts">one frame per 25.6 ms</text><rect x="260" y="250" width="140" height="70" rx="6" class="bx"/><text x="274" y="272" class="tb">GPIO 14 / 21</text><text x="274" y="289" class="ts">pull-up inputs</text><text x="274" y="306" class="ts">polled every 10 ms</text><rect x="430" y="250" width="160" height="70" rx="6" class="bx bx-acc"/><text x="444" y="272" class="tb">Core 1</text><text x="444" y="289" class="ts">display at 40 fps</text><text x="444" y="306" class="ts">+ buttons</text><rect x="620" y="250" width="130" height="70" rx="6" class="bx"/><text x="634" y="272" class="tb">SPI2 master</text><text x="634" y="289" class="ts">mode 0, 1 MHz</text><text x="634" y="306" class="ts">GPIO 11/12/10</text><rect x="260" y="400" width="140" height="70" rx="6" class="bx"/><text x="274" y="422" class="tb">UART0</text><text x="274" y="439" class="ts">921600 baud</text><text x="274" y="456" class="ts">FRAME / TONE lines</text><rect x="620" y="400" width="130" height="70" rx="6" class="bx"/><text x="634" y="422" class="tb">Flash (NVS)</text><text x="634" y="439" class="ts">saved mode</text><text x="634" y="456" class="ts">+ brightness</text><path d="M220 145L260 145" class="w w-sig" marker-end="url(#ar-sig)"/><text x="240" y="137" class="ts" text-anchor="middle">GPIO1</text><path d="M400 145L430 145" class="w w-sig" marker-end="url(#ar-sig)"/><path d="M510 180L510 250" class="w w-ink2" marker-end="url(#ar-ink)"/><text x="518" y="220" class="ts">1-slot queue</text><path d="M220 285L260 285" class="w w-ink2" marker-end="url(#ar-ink)"/><path d="M400 285L430 285" class="w w-ink2" marker-end="url(#ar-ink)"/><path d="M590 285L620 285" class="w w-spi" marker-end="url(#ar-spi)"/><path d="M750 285L800 285" class="w w-spi" marker-end="url(#ar-spi)"/><path d="M560 320L560 435L620 435" class="w w-ink2" marker-end="url(#ar-ink)"/><path d="M460 320L460 435L400 435" class="w w-ink2" marker-end="url(#ar-ink)"/><path d="M260 435L220 435" class="w w-ink2" marker-end="url(#ar-ink)"/><text x="800" y="228" class="tb2">MAX7219 chain, 5 V</text><text x="800" y="246" class="ts">each chip: 8 row registers,</text><text x="800" y="260" class="ts">intensity 0–15, no decode</text><rect x="800" y="268" width="176" height="36" rx="6" class="bx"/><text x="812" y="291" class="t">#0 · 8 × 8 LEDs</text><path d="M888 304L888 320" class="w w-spi" marker-end="url(#ar-spi)"/><rect x="800" y="320" width="176" height="36" rx="6" class="bx"/><text x="812" y="343" class="t">#1 · 8 × 8 LEDs</text><path d="M888 356L888 372" class="w w-spi" marker-end="url(#ar-spi)"/><rect x="800" y="372" width="176" height="36" rx="6" class="bx"/><text x="812" y="395" class="t">#2 · 8 × 8 LEDs</text><path d="M888 408L888 424" class="w w-spi" marker-end="url(#ar-spi)"/><rect x="800" y="424" width="176" height="36" rx="6" class="bx"/><text x="812" y="447" class="t">#3 · 8 × 8 LEDs</text><text x="912" y="316" class="ts">DOUT→DIN</text><rect x="24" y="510" width="952" height="66" rx="6" class="bx"/><text x="40" y="534" class="tb2">Power</text><text x="40" y="552" class="ts">USB 5 V → board 3.3 V regulator → ESP32-S3 and MAX9814 (3.3 V keeps the mic output inside the ADC range).</text><text x="40" y="568" class="ts">USB 5 V → MAX7219 module. Its logic inputs get 3.3 V, below the 3.5 V spec: watch for glitches, buffer if needed.</text></svg>
