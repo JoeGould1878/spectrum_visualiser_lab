@@ -64,10 +64,20 @@ p95 = np.percentile(cols, 95, axis=0)
 print("\ncolumn levels (dBFS):\n  col  median    p95")
 for c in range(cols.shape[1]):
     print(f"  {c:3d}  {med[c]:6.1f}  {p95[c]:6.1f}")
-floor = float(np.max(p95))
-print(f"\nquiet-room use: loudest column (col {int(np.argmax(p95))}) p95 = {floor:.1f} dB. Setting APP_FLOOR_DB to about "
-      f"{floor + 1:.0f} keeps 95 % of quiet frames below the first row (R5);")
-print(f"with {args.db_per_row} dB/row the top row is then {floor + 1 + 8 * args.db_per_row:.0f} dBFS.")
+# Quiet-room floor: the typical column, not the loudest one. A few columns far
+# above the rest in a quiet room are interference (e.g. the MAX7219's ~700 Hz
+# row scan and its harmonics), not room noise; taking the max would set the
+# floor so high that nothing real ever lights a row (what happened on 30/10).
+typ = float(np.median(p95))
+outliers = [c for c in range(len(p95)) if p95[c] > typ + 6]
+floor = typ + 3
+print(f"\nquiet-room use: typical column p95 = {typ:.1f} dB -> APP_FLOOR_DB about {floor:.0f} dB "
+      f"(R5 allows the odd pixel in silence);")
+print(f"with {args.db_per_row} dB/row the top row is then {floor + 8 * args.db_per_row:.0f} dBFS.")
+if outliers:
+    print("WARNING: columns far above the rest in a quiet room (likely interference, not room noise): "
+          + ", ".join(f"{c} (p95 {p95[c]:.1f} dB)" for c in outliers))
+    print("  check the TONE lines for the frequency; peaks at multiples of ~700 Hz = MAX7219 row scan coupling into the mic")
 
 fig, ax = plt.subplots(figsize=(10, 4.5))
 im = ax.imshow(cols.T, aspect="auto", origin="lower", cmap="viridis",

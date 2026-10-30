@@ -81,3 +81,16 @@ Record:
 - [ ] Mean value in silence (the bias in raw counts) and where clipping starts
 - [ ] If talking barely moves the RAW values, note it: that's the case for a second gain stage
 - [ ] Plot one 1 kHz frame in Python — does it look like a sine wave?
+
+### Display interference (found 30/10)
+
+With the display running, a quiet-room log showed tones at **≈700 Hz and its harmonics** (1400, 2100, 2800 Hz), 25–30 dB above the room noise. The MAX7219 scans its 8 LED rows ~700 times a second and switches up to a few hundred mA each time; that current pulse shares the 5 V / GND wires with the mic preamp and shows up as a "tone".
+
+Fixes, in order of effort:
+
+1. **Separate ground returns:** run the display's GND straight to an ESP32 GND pin with its own wire, and the preamp's GND to a *different* GND pin. Don't let display current flow through the breadboard rail the mic uses.
+2. **Decouple the display at the module:** 100 µF electrolytic + 100 nF ceramic across the module's VCC and GND pins, as close to the header as possible.
+3. **Keep the preamp rail filter** (R0 220 Ω + C0 100 µF) close to the preamp, and keep mic wires short and away from the display cable.
+4. **Lower the brightness** (MODE long press): less LED current, smaller pulses. Note the level before/after as evidence.
+
+Check: quiet-room log with `tools/frames.py` — the WARNING line about interference columns should disappear, or the listed columns drop towards the rest.

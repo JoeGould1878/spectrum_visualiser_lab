@@ -56,3 +56,5 @@ Environment: Debian 13, ESP-IDF v6, VS Code. Board enumerates as `/dev/ttyACM0`.
 - ADC continuous mode: ADC1 pins only (GPIO 1–10); check the rate limit in `soc/soc_caps.h`.
 - Mic is a bare electret capsule with a one-NPN preamp (no MAX9814, no AGC). Bar height is true loudness; don't add software auto-gain (it would hide that).
 - MAX7219 at 5 V with 3.3 V logic is below spec; watch for random pixels.
+- The MAX7219 row scan (~700 Hz) couples into the mic preamp via shared supply/ground: tones at multiples of ~700 Hz in a quiet room are interference, not sound (see `bringup/README.md`).
+- Display orientation can be changed on the board (LISTEN long press, saved in NVS); `APP_ORIENT_*` is only the default.

@@ -58,7 +58,7 @@ Wiring: electret capsule + one-NPN preamp, collector → GPIO 1 — parts table 
 
 Wiring = A1 + A2 together. Buttons optional at first (to GND): MODE → GPIO 14, LISTEN → GPIO 21. Without buttons the firmware starts in full mode.
 At boot the log prints a `config:` line with the settings used — keep it in every evidence log.
-Modes (MODE short press): 0 full → 1 bass/voice → 2 tone finder → 3 linear. MODE long press = brightness. LISTEN = stop/start.
+Modes (MODE short press): 0 full → 1 bass/voice → 2 tone finder → 3 linear. MODE long press = brightness. LISTEN short = stop/start, **LISTEN long = next display orientation** (0–15, saved). At power-up the display shows a test staircase for 1.5 s: it must rise from bottom-left to top-right. If not, hold LISTEN until it does (each step shows the staircase for 2.5 s and logs `ORIENT k`).
 
 ```bash
 idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test>.txt
@@ -68,6 +68,8 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 - [ ] Mic connected, room quiet, full mode, 30 s log
   → `python tools/frames.py LOG` prints a suggested `APP_FLOOR_DB` (loudest column's 95th percentile + 1 dB) → **sets** `APP_FLOOR_DB`; set `APP_TONE_MIN_DB` ~10 dB above it
 - [ ] Check R5: ≤ 1 lit pixel per column in silence (photo)
+
+**30/10 result:** the quiet-room log showed peaks at 700 / 1400 / 2100 / 2800 Hz, 25–30 dB above the room. That's the MAX7219 row scan (~700 Hz) coupling into the mic preamp through the shared supply/ground. Fix is in the wiring (see `bringup/README.md`, "Display interference"); re-run B1 after it and compare the two heatmaps: good before/after evidence. `tools/frames.py` now flags such columns instead of using them as the floor.
 
 ### B2. Real frame rate, processing time, latency budget
 - [ ] `python tools/frames.py LOG` on any log: frame rate (R4 ≥ 20), processing time, sample rate, display/latency stats, status-flag %
@@ -92,7 +94,7 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 - [ ] Music + speech demo videos: full mode vs linear mode (same song) — the linear vs hybrid comparison
 
 ### B5. Buttons and modes
-- [ ] Every mode via MODE button; long press changes brightness; LISTEN stops/starts
+- [ ] Every mode via MODE button; long press changes brightness; LISTEN short stops/starts; LISTEN long steps orientation (note the `ORIENT k` that's correct and copy its flags into `APP_ORIENT_*` so it's the default)
 - [ ] Status pixels (top row, right): col 31 = silent, 30 = clipping, 29 = above range, 28 = not listening — trigger each (quiet room / loud clap / 12 kHz tone / LISTEN button), photo each
 - [ ] Tone-finder mode: digits readable? marker pixel under the right column?
 - [ ] Power-cycle: mode and brightness survive (R8); always comes back listening
@@ -104,12 +106,12 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 
 | Value | Placeholder | Set by test |
 | --- | --- | --- |
-| `APP_ORIENT_*` | all false | A1 |
+| `APP_ORIENT_*` | transpose only (best guess from 30/10 photos) | A1, or LISTEN long-press on the main firmware |
 | `APP_MAX7219_CLOCK_HZ` | 1 MHz | A1 (optional) |
 | `APP_SAMPLE_RATE_ACTUAL_HZ` | 40 000 | A2 |
 | Preamp: one or two stages, RB value | 1 stage, 470 kΩ | A2 |
 | `APP_SILENCE_RMS` | 8 | A2 / B1 |
 | `APP_CLIP_MARGIN` | 16 | A2 |
-| `APP_FLOOR_DB` | −60 | B1 |
-| `APP_TONE_MIN_DB` | −50 | B1 |
+| `APP_FLOOR_DB` | −46 (from 30/10 B1 log, interference columns excluded) | B1 |
+| `APP_TONE_MIN_DB` | −36 (floor + 10 dB) | B1 |
 | `APP_FALL_ROWS_PER_S`, `APP_PEAK_*` | 20 / 0.5 s / 6 | B4 videos (tune by eye, note before/after) |

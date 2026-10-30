@@ -28,11 +28,20 @@
 #define APP_DISPLAY_COLS         32
 #define APP_DISPLAY_ROWS         8
 #define APP_BRIGHTNESS_DEFAULT   2                   /* 0..15, low = less power */
-/* Orientation of the 4-in-1 module — set from bring-up 01 results */
+/* Orientation of the 4-in-1 module. These flags are only the DEFAULT: on the
+ * board, a long press on LISTEN steps through all 16 orientations (same
+ * numbering k as bring-up 01: bit0 reverse, bit1 flip X, bit2 flip Y,
+ * bit3 transpose), shows a test staircase, and saves the choice in NVS.
+ * Default = transpose only: the 30/10 photos showed bars running along the
+ * strip with all flags false, so rows and columns are swapped on this module. */
 #define APP_ORIENT_REVERSE_DEVICES  false
 #define APP_ORIENT_FLIP_X           false
 #define APP_ORIENT_FLIP_Y           false
-#define APP_ORIENT_TRANSPOSE        false
+#define APP_ORIENT_TRANSPOSE        true
+#define APP_ORIENT_DEFAULT_K        ((APP_ORIENT_REVERSE_DEVICES ? 1 : 0) | (APP_ORIENT_FLIP_X ? 2 : 0) | \
+                                     (APP_ORIENT_FLIP_Y ? 4 : 0) | (APP_ORIENT_TRANSPOSE ? 8 : 0))
+#define APP_STAIRCASE_BOOT_MS    1500   /* test staircase at power-up: left low -> right high */
+#define APP_STAIRCASE_ORIENT_MS  2500   /* and after each orientation change */
 
 /* ---------------- Sampling and FFT ---------------- */
 #define APP_SAMPLE_RATE_HZ       40000   /* requested; S3 allows 611..83333 (SOC_ADC_SAMPLE_FREQ_THRES_*) */
@@ -54,8 +63,9 @@
 #define APP_LINEAR_F_MAX_HZ      APP_FULL_F_MAX_HZ
 
 /* ---------------- Levels (MEASURE) ---------------- */
-#define APP_FLOOR_DB             (-21.0f)   /* MEASURE: quiet-room noise floor */
-#define APP_DB_PER_ROW           4.0f       /* 8 rows = 32 dB */
+#define APP_FLOOR_DB             (-46.0f)   /* 2026-10-30_B1_quiet_room: typical column p95 -49 dB, +3 dB.
+                                               (-21 was the loudest column = 700 Hz display interference) */
+#define APP_DB_PER_ROW           3.0f       /* 8 rows = 24 dB: electret preamp is quiet, speech needs the range */
 #define APP_FALL_ROWS_PER_S      20.0f
 #define APP_PEAK_HOLD_S          0.5f
 #define APP_PEAK_FALL_ROWS_PER_S 6.0f
@@ -63,7 +73,7 @@
 /* ---------------- Status row thresholds (MEASURE) ---------------- */
 #define APP_SILENCE_RMS          8.0f       /* MEASURE: raw counts */
 #define APP_CLIP_MARGIN          16         /* raw within this of 0 or 4095 = clipping */
-#define APP_TONE_MIN_DB          (-11.0f)   /* MEASURE: tone-finder "nothing there" level */
+#define APP_TONE_MIN_DB          (-36.0f)   /* floor + 10 dB: below this the tone finder shows "---" */
 #define APP_TONE_F_MIN_HZ        50.0f      /* tone-finder ignores bins below this (DC, rumble) */
 #define APP_TONE_DISPLAY_MS      250        /* digits update 4x/s so they're readable */
 /* "Above range" pixel: strongest peak above the displayed range is louder than

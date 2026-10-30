@@ -13,6 +13,7 @@
 typedef struct {
     app_mode_t mode;
     uint8_t    brightness;   /**< 0..15 */
+    uint8_t    orient;       /**< 0..15, display orientation k (see APP_ORIENT_DEFAULT_K) */
 } settings_t;
 
 /** Initialise NVS (erase and retry if the partition is full or old). */

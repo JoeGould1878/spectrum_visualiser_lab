@@ -6,8 +6,12 @@
  *   reviewed and tested on hardware by Joe Gould
  *
  * Owns both buttons. Changes are passed on through audio_task_set_mode(),
- * audio_task_set_listening() and display_task_set_brightness(); mode and
- * brightness are saved to NVS only when they change.
+ * audio_task_set_listening(), display_task_set_brightness() and
+ * display_task_set_orientation(); mode, brightness and orientation are saved
+ * to NVS only when they change.
+ *
+ *   MODE   short: next mode        long: next brightness
+ *   LISTEN short: stop/start       long: next display orientation (k 0..15)
  */
 #include "input_task.h"
 #include "app_config.h"
@@ -68,10 +72,20 @@ static void input_task(void *arg)
             break;
         }
 
-        if (button_poll(&s_btn_listen, now_ms) != BUTTON_EVT_NONE) {
+        switch (button_poll(&s_btn_listen, now_ms)) {
+        case BUTTON_EVT_SHORT:
             listening = !listening;
             audio_task_set_listening(listening);
             ESP_LOGI(TAG, "listening -> %s", listening ? "ON" : "OFF");
+            break;
+        case BUTTON_EVT_LONG:
+            s_settings.orient = (uint8_t)((s_settings.orient + 1) & 15u);
+            display_task_set_orientation(s_settings.orient);
+            save();
+            ESP_LOGI(TAG, "orientation -> %u", s_settings.orient);
+            break;
+        default:
+            break;
         }
     }
 }

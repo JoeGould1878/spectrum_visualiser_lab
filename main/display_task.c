@@ -25,16 +25,29 @@ static const char *TAG = "display";
 
 static QueueHandle_t s_in;
 static atomic_uint s_req_brightness = APP_BRIGHTNESS_DEFAULT;
+static atomic_uint s_req_orient = APP_ORIENT_DEFAULT_K;
 
 /* Owned by the task */
 static max7219_handle_t s_disp;
 static bar_model_t s_bars;
-static const frame_orient_t s_orient = {
-    .reverse_devices = APP_ORIENT_REVERSE_DEVICES,
-    .flip_x = APP_ORIENT_FLIP_X,
-    .flip_y = APP_ORIENT_FLIP_Y,
-    .transpose = APP_ORIENT_TRANSPOSE,
-};
+static frame_orient_t s_orient;
+
+static frame_orient_t orient_from_k(unsigned k)
+{
+    frame_orient_t o = {
+        .reverse_devices = k & 1,
+        .flip_x = (k >> 1) & 1,
+        .flip_y = (k >> 2) & 1,
+        .transpose = (k >> 3) & 1,
+    };
+    return o;
+}
+
+/* Same test pattern as bring-up 01: column x lit to height x/4 + 1. */
+static void draw_staircase(frame_t *fr)
+{
+    for (int x = 0; x < FRAME_COLS; x++) frame_draw_bar(fr, x, x / 4 + 1);
+}
 
 static void draw_spectrum(frame_t *fr, const audio_frame_t *a, float dt_s)
 {
@@ -94,6 +107,9 @@ static void display_task(void *arg)
     int64_t next_resync_us = esp_timer_get_time() + APP_DISPLAY_RESYNC_MS * 1000LL;
     app_mode_t last_mode = APP_MODE_COUNT;
     unsigned brightness = 0xFF;
+    unsigned orient_k = 0xFF;
+    int64_t staircase_until_us = 0;
+    bool first_orient = true;
     uint8_t rows[APP_MAX7219_DEVICES * 8];
 
     /* Once-a-second DISPLAY line: refresh rate, frame age, SPI write time */
@@ -115,6 +131,16 @@ static void display_task(void *arg)
             brightness = want_b;
         }
 
+        unsigned want_k = atomic_load(&s_req_orient);
+        if (want_k != orient_k) {
+            orient_k = want_k;
+            s_orient = orient_from_k(orient_k);
+            staircase_until_us = now + 1000LL * (first_orient ? APP_STAIRCASE_BOOT_MS : APP_STAIRCASE_ORIENT_MS);
+            first_orient = false;
+            ESP_LOGI(TAG, "ORIENT %2u: REVERSE_DEVICES=%d FLIP_X=%d FLIP_Y=%d TRANSPOSE=%d (staircase should rise left->right)",
+                     orient_k, s_orient.reverse_devices, s_orient.flip_x, s_orient.flip_y, s_orient.transpose);
+        }
+
         if (now >= next_resync_us) {
             max7219_resync(s_disp);
             next_resync_us = now + APP_DISPLAY_RESYNC_MS * 1000LL;
@@ -133,7 +159,9 @@ static void display_task(void *arg)
 
         frame_t fr;
         frame_clear(&fr);
-        if (have_frame) {
+        if (now < staircase_until_us) {
+            draw_staircase(&fr);
+        } else if (have_frame) {
             if (latest.mode != last_mode) {   /* new mode: don't carry old bars over */
                 bar_model_init(&s_bars, &bcfg, APP_DISPLAY_COLS);
                 last_mode = latest.mode;
@@ -193,4 +221,9 @@ esp_err_t display_task_start(QueueHandle_t frames_in)
 void display_task_set_brightness(uint8_t level)
 {
     atomic_store(&s_req_brightness, level > 15 ? 15 : level);
+}
+
+void display_task_set_orientation(uint8_t k)
+{
+    atomic_store(&s_req_orient, k & 15u);
 }

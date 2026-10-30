@@ -31,6 +31,7 @@ esp_err_t settings_load(settings_t *out)
 {
     out->mode = APP_MODE_DEFAULT;
     out->brightness = APP_BRIGHTNESS_DEFAULT;
+    out->orient = APP_ORIENT_DEFAULT_K;
 
     nvs_handle_t h;
     esp_err_t err = nvs_open(NVS_NS, NVS_READONLY, &h);
@@ -40,8 +41,9 @@ esp_err_t settings_load(settings_t *out)
     uint8_t v;
     if (nvs_get_u8(h, "mode", &v) == ESP_OK && v < APP_MODE_COUNT) out->mode = (app_mode_t)v;
     if (nvs_get_u8(h, "bright", &v) == ESP_OK && v <= 15) out->brightness = v;
+    if (nvs_get_u8(h, "orient", &v) == ESP_OK && v <= 15) out->orient = v;
     nvs_close(h);
-    ESP_LOGI(TAG, "loaded mode %d, brightness %u", out->mode, out->brightness);
+    ESP_LOGI(TAG, "loaded mode %d, brightness %u, orientation %u", out->mode, out->brightness, out->orient);
     return ESP_OK;
 }
 
@@ -51,6 +53,7 @@ esp_err_t settings_save(const settings_t *s)
     ESP_RETURN_ON_ERROR(nvs_open(NVS_NS, NVS_READWRITE, &h), TAG, "open");
     esp_err_t err = nvs_set_u8(h, "mode", (uint8_t)s->mode);
     if (err == ESP_OK) err = nvs_set_u8(h, "bright", s->brightness);
+    if (err == ESP_OK) err = nvs_set_u8(h, "orient", s->orient);
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);
     return err;

@@ -44,7 +44,8 @@ void app_main(void)
 
     ESP_ERROR_CHECK(display_task_start(frames));
     display_task_set_brightness(s.brightness);
+    display_task_set_orientation(s.orient);
     ESP_ERROR_CHECK(audio_task_start(frames, s.mode));
     ESP_ERROR_CHECK(input_task_start(&s));
-    ESP_LOGI(TAG, "running: mode %d, brightness %u", s.mode, s.brightness);
+    ESP_LOGI(TAG, "running: mode %d, brightness %u, orientation %u", s.mode, s.brightness, s.orient);
 }
