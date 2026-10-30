@@ -58,6 +58,8 @@ static void input_task(void *arg)
         switch (button_poll(&s_btn_mode, now_ms)) {
         case BUTTON_EVT_SHORT:
             s_settings.mode = (app_mode_t)((s_settings.mode + 1) % APP_MODE_COUNT);
+            if (!APP_SHOW_TONE_MODE && s_settings.mode == APP_MODE_TONE_FINDER)
+                s_settings.mode = (app_mode_t)((s_settings.mode + 1) % APP_MODE_COUNT);
             audio_task_set_mode(s_settings.mode);
             save();
             ESP_LOGI(TAG, "mode -> %d", s_settings.mode);

@@ -56,7 +56,7 @@ static void draw_spectrum(frame_t *fr, const audio_frame_t *a, float dt_s)
         int h = bar_model_height(&s_bars, x);
         frame_draw_bar(fr, x, h);
         int p = bar_model_peak_row(&s_bars, x);
-        if (p > h) frame_draw_peak(fr, x, p);   /* a dot inside the bar would be invisible */
+        if (APP_SHOW_PEAK_DOTS && p > h) frame_draw_peak(fr, x, p);   /* a dot inside the bar would be invisible */
     }
 }
 
@@ -136,6 +136,7 @@ static void display_task(void *arg)
             orient_k = want_k;
             s_orient = orient_from_k(orient_k);
             staircase_until_us = now + 1000LL * (first_orient ? APP_STAIRCASE_BOOT_MS : APP_STAIRCASE_ORIENT_MS);
+            /* (APP_STAIRCASE_BOOT_MS 0 = no staircase at power-up) */
             first_orient = false;
             ESP_LOGI(TAG, "ORIENT %2u: REVERSE_DEVICES=%d FLIP_X=%d FLIP_Y=%d TRANSPOSE=%d (staircase should rise left->right)",
                      orient_k, s_orient.reverse_devices, s_orient.flip_x, s_orient.flip_y, s_orient.transpose);
@@ -168,12 +169,12 @@ static void display_task(void *arg)
             }
             if (latest.status & FRAME_STATUS_NOT_LISTENING) {
                 bar_model_init(&s_bars, &bcfg, APP_DISPLAY_COLS);   /* blank, not falling */
-            } else if (latest.mode == APP_MODE_TONE_FINDER) {
+            } else if (APP_SHOW_TONE_MODE && latest.mode == APP_MODE_TONE_FINDER) {
                 draw_tone(&fr, &latest, now);
             } else {
                 draw_spectrum(&fr, &latest, dt_s);
             }
-            frame_draw_status(&fr, latest.status);
+            if (APP_SHOW_STATUS_PIXELS) frame_draw_status(&fr, latest.status);
         }
 
         frame_to_device_rows(&fr, &s_orient, APP_MAX7219_DEVICES, rows);

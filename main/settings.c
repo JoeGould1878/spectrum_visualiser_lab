@@ -43,6 +43,7 @@ esp_err_t settings_load(settings_t *out)
     if (nvs_get_u8(h, "bright", &v) == ESP_OK && v <= 15) out->brightness = v;
     if (nvs_get_u8(h, "orient", &v) == ESP_OK && v <= 15) out->orient = v;
     nvs_close(h);
+    if (!APP_SHOW_TONE_MODE && out->mode == APP_MODE_TONE_FINDER) out->mode = APP_MODE_FULL;
     ESP_LOGI(TAG, "loaded mode %d, brightness %u, orientation %u", out->mode, out->brightness, out->orient);
     return ESP_OK;
 }

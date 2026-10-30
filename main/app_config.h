@@ -40,7 +40,7 @@
 #define APP_ORIENT_TRANSPOSE        true
 #define APP_ORIENT_DEFAULT_K        ((APP_ORIENT_REVERSE_DEVICES ? 1 : 0) | (APP_ORIENT_FLIP_X ? 2 : 0) | \
                                      (APP_ORIENT_FLIP_Y ? 4 : 0) | (APP_ORIENT_TRANSPOSE ? 8 : 0))
-#define APP_STAIRCASE_BOOT_MS    1500   /* test staircase at power-up: left low -> right high */
+#define APP_STAIRCASE_BOOT_MS    0      /* test staircase at power-up (0 = off; orientation changes still show it) */
 #define APP_STAIRCASE_ORIENT_MS  2500   /* and after each orientation change */
 
 /* ---------------- Sampling and FFT ---------------- */
@@ -102,6 +102,14 @@
 #define APP_MODE_DEFAULT         APP_MODE_FULL   /* used until a mode is saved */
 /* Long press on MODE steps through these brightness levels */
 #define APP_BRIGHTNESS_STEPS     {0, 2, 5, 9, 15}
+
+/* ---------------- What the display draws ----------------
+ * Plain spectrum bars by default (Joe, 30/10: "leave the fancy stuff").
+ * The extras are still computed and logged over serial (TONE lines, status
+ * bits in FRAME lines), so tests and tools keep working; set to 1 to show. */
+#define APP_SHOW_TONE_MODE       0   /* tone-finder digits as a MODE-button mode */
+#define APP_SHOW_STATUS_PIXELS   0   /* top-right silent/clip/above-range/not-listening pixels */
+#define APP_SHOW_PEAK_DOTS       0   /* falling dot above each bar */
 
 /* ---------------- Debug ---------------- */
 #define APP_DEBUG_STREAM_DEFAULT 1          /* print FRAME/TONE lines over serial */

@@ -58,7 +58,7 @@ Wiring: electret capsule + one-NPN preamp, collector → GPIO 1 — parts table 
 
 Wiring = A1 + A2 together. Buttons optional at first (to GND): MODE → GPIO 14, LISTEN → GPIO 21. Without buttons the firmware starts in full mode.
 At boot the log prints a `config:` line with the settings used — keep it in every evidence log.
-Modes (MODE short press): 0 full → 1 bass/voice → 2 tone finder → 3 linear. MODE long press = brightness. LISTEN short = stop/start, **LISTEN long = next display orientation** (0–15, saved). At power-up the display shows a test staircase for 1.5 s: it must rise from bottom-left to top-right. If not, hold LISTEN until it does (each step shows the staircase for 2.5 s and logs `ORIENT k`).
+Modes (MODE short press): 0 full → 1 bass/voice → 3 linear (tone-finder digits hidden since 30/10: `APP_SHOW_TONE_MODE`; TONE lines are still logged for the accuracy tests). The display shows plain bars only — status pixels and peak dots are off (`APP_SHOW_*` in `app_config.h`). MODE long press = brightness. LISTEN short = stop/start, **LISTEN long = next display orientation** (0–15, saved). At power-up the display shows a test staircase for 1.5 s: it must rise from bottom-left to top-right. If not, hold LISTEN until it does (each step shows the staircase for 2.5 s and logs `ORIENT k`).
 
 ```bash
 idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test>.txt
