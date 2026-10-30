@@ -54,7 +54,7 @@
 #define APP_LINEAR_F_MAX_HZ      APP_FULL_F_MAX_HZ
 
 /* ---------------- Levels (MEASURE) ---------------- */
-#define APP_FLOOR_DB             (-60.0f)   /* MEASURE: quiet-room noise floor */
+#define APP_FLOOR_DB             (-21.0f)   /* MEASURE: quiet-room noise floor */
 #define APP_DB_PER_ROW           4.0f       /* 8 rows = 32 dB */
 #define APP_FALL_ROWS_PER_S      20.0f
 #define APP_PEAK_HOLD_S          0.5f
@@ -63,7 +63,7 @@
 /* ---------------- Status row thresholds (MEASURE) ---------------- */
 #define APP_SILENCE_RMS          8.0f       /* MEASURE: raw counts */
 #define APP_CLIP_MARGIN          16         /* raw within this of 0 or 4095 = clipping */
-#define APP_TONE_MIN_DB          (-50.0f)   /* MEASURE: tone-finder "nothing there" level */
+#define APP_TONE_MIN_DB          (-11.0f)   /* MEASURE: tone-finder "nothing there" level */
 #define APP_TONE_F_MIN_HZ        50.0f      /* tone-finder ignores bins below this (DC, rumble) */
 #define APP_TONE_DISPLAY_MS      250        /* digits update 4x/s so they're readable */
 /* "Above range" pixel: strongest peak above the displayed range is louder than
