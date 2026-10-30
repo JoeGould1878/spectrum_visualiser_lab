@@ -9,7 +9,7 @@ Skeleton code in place (headers + build files, no implementation). Hardware is k
 | Part | What we have | What it means for the design |
 | --- | --- | --- |
 | Board | Freenove ESP32-S3-WROOM (same as the hourglass) | Not the classic ESP32 Aidan used: no I2S-ADC mode, his pins (GPIO 34/23/18/5/27) don't map across. Unplug the camera ribbon to free GPIO 4–18. |
-| Input | MAX9814 electret mic module | Built-in automatic gain control (AGC); output sits on a 1.25 V bias with about 2 V peak-to-peak max. Nobody on the project has used it yet: Aidan's never arrived. |
+| Input | Bare electret capsule + one-NPN preamp (the planned MAX9814 wasn't available) | No AGC: bar height is real loudness. Gain ≈ ×35–50 (31–34 dB), output ≈ 1.5 V DC + audio. Quieter than the MAX9814 would have been, so speech at a distance will be weak. |
 | Display | 4-in-1 MAX7219 module, 32 × 8 (photo) | 32 columns, 8 rows — same as Aidan's |
 | Other | Push button(s), resistors/caps from the kit; lab function generator (confirmed) | Electrical test path is available |
 
@@ -93,23 +93,23 @@ Proposed product: an **"honest" sound-spectrum display for a teaching lab** that
 
 Write one short block per pipeline stage: **options considered → choice → why → evidence.** Starred choices are proposals to test, not decisions yet.
 
-**Two input paths, on purpose.** An *electrical* path (signal generator → conditioning → ADC) tests the ADC and FFT with exact frequencies. An *acoustic* path (phone tone app → speaker → MAX9814 → ADC) tests the real product. A difference between the two is the mic, speaker and room — something to measure, not hide.
+**Two input paths, on purpose.** An *electrical* path (signal generator → conditioning → ADC) tests the ADC and FFT with exact frequencies. An *acoustic* path (phone tone app → speaker → electret + NPN preamp → ADC) tests the real product. A difference between the two is the mic, speaker and room — something to measure, not hide.
 
 | Stage | Options | Proposed choice | Why / evidence |
 | --- | --- | --- | --- |
-| Mic setup | MAX9814 gain 40 / 50 / 60 dB (Gain pin); attack/release ratio (A/R pin) | ★ Power at 3.3 V; start at 40 dB, try 50/60 | Output ~0.25–2.25 V fits the ADC; lower gain clips less. Log raw samples at each setting. |
+| Mic setup | MAX9814 module (not available); electret straight to ADC; one-NPN preamp; two NPN stages; op-amp (none available) | ★ One NPN, common emitter, collector-feedback bias; second stage only if A2 shows speech is too weak | Capsule alone gives ~0.1–1 mV for speech, ≈ 1 ADC step. One stage gives ×35–50 with a self-correcting bias point; logs from A2 decide on a second stage. |
 | Conditioning | Mic straight to ADC (it's already biased); RC low-pass; electrical path = coupling cap + bias divider + RC | ★ Mic direct to an ADC1 pin; electrical path with an RC sized for *our* sample rate | Aidan's 220 Ω + 22 nF cuts off at ~33 kHz — fine at 96 kHz, too high to stop aliasing at ~40 kHz |
 | Sampling | analogRead() loop (Aidan: only ~12 kHz real); ADC continuous/DMA | ★ Continuous/DMA on ADC1, ~40 kHz if the S3 allows | Count samples per second; check `soc_caps.h` limit |
 | Processing | Raw FFT; + DC removal; + Hann window; dB magnitude | ★ DC removal + Hann + FFT, N = 1024 | Mic bias must be removed; window cuts leakage — show a tone with and without |
 | Mapping | Linear (all previous prototypes); pure log; hybrid | ★ Hybrid: one FFT bin per column at the bottom, log-spaced above | Pure log needs bins narrower than we have (below) |
 | Range modes | Aidan's 4 linear ranges; decimated "bass/voice" mode | ★ Full mode + a bass/voice mode made by filtering and keeping every 4th sample | Finer bins where music lives; two-tone test proves it |
-| Scaling | Fixed constant; dB with measured noise floor; auto-gain | ★ dB with a noise floor measured in a quiet room | The MAX9814 already has AGC — adding software auto-gain would double-squash loudness |
+| Scaling | Fixed constant; dB with measured noise floor; auto-gain | ★ dB with a noise floor measured in a quiet room | Without AGC, bar height shows true loudness — what a teaching instrument should do. Software auto-gain would hide that. |
 | Smoothing | None; fast-rise slow-fall; peak-hold | ★ Fast rise, slow fall + peak dots | Tune from video |
 | Display | 32 × 8 MAX7219 at 5 V | ★ Low default brightness | 3.3 V logic vs 3.5 V spec: test pattern first, buffer (74HCT125) if glitchy |
 | Controls | One or two buttons | ★ Button 1 cycles modes (saved in flash); button 2 stops listening | Function test |
 | Framework | Arduino-ESP32 core (arduino-cli, like Aidan); ESP-IDF v6 | ★ ESP-IDF v6 (decided 29/10) | Previous code unavailable, so there's nothing to stay close to; IDF gives direct access to the continuous ADC driver and FreeRTOS tasks, and is already set up from the hourglass |
 
-**Proposed pins** (Freenove ESP32-S3, camera unplugged — confirm at bring-up): MAX9814 OUT → GPIO 1 (ADC1); MAX7219 DIN / CLK / CS → GPIO 11 / 12 / 10; button(s) → GPIO 14 (and 21) to GND with pull-ups. Avoid GPIO 2 (on-board LED), 0/3/45/46 (strapping), 35–37 (PSRAM).
+**Proposed pins** (Freenove ESP32-S3, camera unplugged — confirm at bring-up): mic preamp output → GPIO 1 (ADC1); MAX7219 DIN / CLK / CS → GPIO 11 / 12 / 10; button(s) → GPIO 14 (and 21) to GND with pull-ups. Avoid GPIO 2 (on-board LED), 0/3/45/46 (strapping), 35–37 (PSRAM).
 
 **Numbers for the write-up** (check against measurements):
 
@@ -126,7 +126,8 @@ Write one short block per pipeline stage: **options considered → choice → wh
 | --- | --- | --- |
 | S3 ADC slower or noisier than assumed | Range shrinks; noisy floor | Measure rate and floor before anything else |
 | Aliasing (seen by Zhexi and Aidan) | High tone shown as a false low peak | Sample well above display range; RC sized for our rate; digital filter before decimating |
-| MAX9814 AGC | Bar height isn't true loudness | Measure the compression curve; state it; don't add software AGC |
+| Preamp gain too low for speech | Bars barely move for talking at a distance | A2 logs decide; add a second NPN stage (gain ≈ ×10 with 470 Ω emitter resistor) |
+| Preamp bias drifts with transistor β | Collector near a rail → clipping | Collector-feedback bias; measure collector voltage; RB 330–680 kΩ to adjust |
 | Too few bins at low end | Bass columns jumpy or empty | Hybrid mapping; decimated bass mode |
 | Phone speaker can't play bass | Acoustic tests look worse than the device is | Electrical path for low tones; note the speaker limit |
 | Mic clipping on loud sounds | Fake harmonics | Clip pixel; lower gain setting |
@@ -138,7 +139,7 @@ Build the **core** first, then **one flagship**, then stretch goals if time allo
 
 | Tier | Addition | Over what's been done | Evidence it produces |
 | --- | --- | --- | --- |
-| Core | **Port to ESP32-S3 + first working mic path** (MAX9814) | Aidan's mic never arrived; nobody has run this on an S3 | Raw-sample plots, measured sample rate, gain-setting comparison |
+| Core | **Port to ESP32-S3 + first working mic path** (electret + discrete NPN preamp) | Aidan's mic never arrived; nobody has run this on an S3 | Raw-sample plots, measured sample rate, gain-setting comparison |
 | Core | **Measured accuracy, not "near the centre"** — serial logging + Python | Previous tests were by eye | Hz-in vs column table with error, frequency-response plot, noise floor, latency |
 | Core | **Hybrid log mapping** | All prototypes linear; Aidan's 0–6 kHz range puts 0–187 Hz in one column | Same music linear vs hybrid, side-by-side video; tone-per-column test |
 | Core | **"Can I trust it?" status row** — pixels for silence, clipping, energy above the display range, listening on/off | Answers the brief's "how would a user know it's working?" | Each test triggers the right pixel |
@@ -202,17 +203,18 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 | 29/10 | Teaching-lab framing (accuracy over looks) — confirmed by Joe | Music-first visualiser | Brief rewards evidence and known limits |
 | 29/10 | Two input paths: electrical for exact tests, mic for the product — lab function generator confirmed available | Mic only; generator only (Aidan) | Separates ADC/FFT errors from mic/speaker/room effects |
 | 29/10 | Hybrid log mapping — *proposed* | Linear (all previous prototypes); pure log | Pure log needs finer bins than we have at the bottom |
-| 29/10 | No software auto-gain — *proposed* | Software AGC | MAX9814 already has AGC; doubling it hides loudness |
+| 29/10 | No software auto-gain — *proposed*; reason updated 30/10 | Software AGC | Originally: MAX9814 already has AGC. Now (no MAX9814): bar height should show true loudness, which AGC would hide |
 | 29/10 | Write firmware from scratch in ESP-IDF v6 | Adapt course repo code (Arduino-ESP32) | Repo is private and couldn't be obtained; IDF gives direct control of the S3's continuous ADC; toolchain already working from the hourglass |
 | 29/10 | MAX7219 driver: SPI mode 0, no DMA, one CS-low transaction per row register for the whole chain, 1 MHz to start | Bit-banged GPIO; DMA; one chip at a time | Datasheet timing (clocked on rising edge, latched on CS rising edge); ≤ 16 bytes per transfer so DMA adds nothing; writing all chips per transaction keeps them in step. Clock raised only after the soak test is clean |
 | 29/10 | Find orientation by sweeping all 16 `frame_orient_t` combinations on the matrix, plus three raw-bit photos | Guess, edit, reflash until right | One flash gives the answer and a photo record; the mapping logic is unit-tested on the laptop first |
 | 29/10 | Status-row layout in `frame_draw_status` is provisional (top-right pixels) — superseded below | — | Real layout is a session-4 design decision; placeholder lets code build |
 | 29/10 | ADC: continuous (DMA) driver on ADC1, rate counted in the driver's frame-done interrupt; overflow counter added to `adc_sampler.h` | `adc_oneshot` in a loop (Aidan's `analogRead` only reached ~12 kHz of 60 kHz); counting samples as they are read | Hardware-clocked sampling; counting in the interrupt measures what the ADC produced, independent of the reader. Overflows make gaps in audio visible instead of silent |
-| 29/10 | ADC attenuation 12 dB (~0–3.1 V range) | 6 dB (~0–1.75 V, finer steps) | MAX9814 swings 0.25–2.25 V; 6 dB would clip the top of loud signals. Check against STATS min/max in bring-up 02 |
+| 29/10 | ADC attenuation 12 dB (~0–3.1 V range) | 6 dB (~0–1.75 V, finer steps) | The mic preamp output sits at ~1.5 V and can swing ~0.2–3.0 V; 6 dB (~1.75 V max) would clip loud signals. Check against STATS min/max in bring-up 02 |
 | 29/10 | ADC buffer drops old data when full (`flush_pool`) — *corrected at review: the driver discards the whole ~100 ms pool, not just the oldest chunk* | Stall until read | A late frame is worse than a dropped one for latency (R3); the overflow count shows when it happens, and the frame being read then has a gap |
 | 29/10 | Requested rate 40 kHz (S3 allows 611–83 333 Hz, `soc_caps.h`); bring-up 02 sweeps 20–83.3 kHz | Go straight to max rate | 40 kHz gives Nyquist 20 kHz above the 8 kHz display range and 39 Hz bins at N = 1024; the sweep shows where the S3 stops keeping up. All Hz maths use a separate `APP_SAMPLE_RATE_ACTUAL_HZ` set from the measured value |
 | 29/10 | Serial console at 921600 baud | 115200 default | FRAME lines are ~9 KB/s at 39 frames/s, close to 115200's ~11.5 KB/s limit; RAW frames are ~5 KB each |
 | 29/10 | Hybrid log mapping algorithm: column by column, split the remaining range into equal ratios for the columns left, round to whole bins, minimum one bin | Fixed log edges then merge empty columns; pure log | Never leaves an empty column, no duplicated bins, log spacing appears automatically once bands get wider than a bin (100–8000 Hz at 39 Hz bins: 9 single-bin columns, then log). Column table printed by `test_band_map` |
+| 30/10 | Mic input: bare electret capsule + one-NPN common-emitter preamp, collector-feedback bias (R1 2.2 kΩ, C1 1 µF, RB 470 kΩ, RC 4.7 kΩ, C2 2.2 nF), rail filtered by 220 Ω + 100 µF | Wait for a MAX9814; capsule straight to the ADC; two NPN stages; op-amp (none available) | MAX9814 not in the kit. Capsule alone ≈ 1 ADC step for speech. Bias point calculated for β 100–400: collector 1.1–1.9 V, gain ×33–53 (30–34 dB); 1 kΩ rail resistor rejected because its drop pulled the collector to ~1 V. RC + C2 low-pass ≈ 15 kHz for anti-aliasing. Check: collector voltage + A2 raw logs |
 | 29/10 | Column value = loudest bin in the column (max) | Average or sum of bins | A pure tone shows full height wherever it lands; average would make wide top columns look quieter than narrow bottom ones |
 | 29/10 | DC bin (bin 0) never used | Include it | It holds the mic's 1.25 V bias, not sound |
 | 29/10 | Bar height truncates (row lights only when fully reached) | Round to nearest | Noise just above the floor lights nothing (R5, quiet room) |
@@ -262,7 +264,7 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 - Casey Overkleeft — Spectrum Visualiser research and preparation (summary of Zhexi Zhang's report): https://labinaboxcaseyov.blogspot.com/2026/06/day-1-spectrum-visualiser-research-and.html
 - Course repo: github.com/caseyov/spectrumVisualiser — private, not available; firmware rebuilt from scratch
 - Espressif — ESP32-S3 ADC continuous mode driver (ESP-IDF v6.0): https://docs.espressif.com/projects/esp-idf/en/v6.0/esp32s3/api-reference/peripherals/adc/adc_continuous.html
-- Adafruit — MAX9814 AGC electret mic amplifier guide: https://learn.adafruit.com/adafruit-agc-electret-microphone-amplifier-max9814
+- Adafruit — MAX9814 AGC electret mic amplifier guide (original plan; part not available): https://learn.adafruit.com/adafruit-agc-electret-microphone-amplifier-max9814
 - Shajeeb — Arduino 32-band visualizer: https://github.com/shajeebtm/Arduino-audio-spectrum-visualizer-analyzer
 - HAZI-TECH 32-band: https://github.com/HAZI-TECH/32-Band-LED-Audio-Spectrum-Analyzer
 - ShillehTek ESP32 + I2S mic: https://shillehtek.com/blogs/news/esp32-inmp441-max7219-sound-reactive-led-matrix

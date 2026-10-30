@@ -20,13 +20,13 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 ## Hardware
 
 - **Freenove ESP32-S3-WROOM** (same board as the hourglass) — camera unplugged
-- **MAX9814** mic module: AGC, ~1.25 V bias, ~2 Vpp max, gain pin open/GND/VDD = 60/50/40 dB, powered at 3.3 V
+- **Mic: bare electret capsule + one-NPN preamp** (MAX9814 not available). Common emitter with collector feedback, gain ≈ ×35–50, output ≈ 1.5 V DC + audio, no AGC. Parts table: `bringup/README.md`; schematic: `docs/diagrams/circuit.png`
 - **4-in-1 MAX7219** 32 × 8 matrix at 5 V
 - 2 push buttons (mode, listen)
 
 | Signal | GPIO |
 | --- | --- |
-| Mic OUT (ADC1 ch0) | 1 |
+| Mic preamp out / generator test input (ADC1 ch0) | 1 |
 | MAX7219 DIN / CLK / CS | 11 / 12 / 10 |
 | Button mode / listen | 14 / 21 |
 
@@ -72,3 +72,4 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - **29 Oct:** Joe confirmed: start listening at power-up; linear baseline at N = 1024 / full range. Added `docs/LAB_TESTS.md` (kept updated per commit).
 - **29 Oct:** Credit wording applied to every file (Joe: design/interfaces drafted with Claude; Claude: implementation; Joe: review + hardware testing). Python tools written and checked against synthetic logs. Everything for the 2 pm lab is in `docs/LAB_TESTS.md`.
 - **29 Oct:** Full code review before the 2 pm lab. Fixed: tone-finder edge case (+ test), display stale-frame blanking, MAX7219 control-register resync, task stacks, ADC error back-off, column-edge boot log; corrected the electrical-path filter capacitor (15 nF → 2.2 nF) and the flush_pool description. All in the decision log.
+- **30 Oct:** Mic kit turned out to be a bare electret capsule, no MAX9814, and no op-amp available. Designed a one-NPN preamp (collector-feedback bias, RB 470 kΩ, RC 4.7 kΩ, gain ≈ ×35–50, 2.2 nF anti-alias) and a 220 Ω + 100 µF rail filter; bias point checked for β 100–400 (collector 1.1–1.9 V). No firmware change needed. Updated wiring diagram, bring-up/lab docs, decision log. Order for the lab: bring-up 01 → bring-up 02 (generator for the rate sweep, then preamp) → main firmware B3 with the generator.

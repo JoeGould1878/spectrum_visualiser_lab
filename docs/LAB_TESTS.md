@@ -37,18 +37,18 @@ cd bringup/02_mic_adc && idf.py set-target esp32s3   # first time only
 idf.py build flash -p /dev/ttyACM0 monitor | tee ../../docs/evidence/logs/2026-10-29_02_rate_sweep.txt
 ```
 
-Wiring: MAX9814 VDD → 3.3V, GND → GND, OUT → GPIO 1. Gain pin: VDD = 40 dB, GND = 50 dB, open = 60 dB. A/R open.
+Wiring: electret capsule + one-NPN preamp, collector → GPIO 1 — parts table in `bringup/README.md`, schematic in `docs/diagrams/circuit.png`. First measure the collector voltage in a quiet room (want 1.1–1.9 V; adjust RB if not). For the rate sweep you can use the generator test input instead (1 kHz, 1 Vpp).
 
 - [ ] First ~20 s: six `RATE_TEST,<requested>,<measured>,<overflows>` lines → `python tools/rate_table.py LOG` gives the table (requested vs measured, % error)
   → **sets** `APP_SAMPLE_RATE_ACTUAL_HZ` (measured value at 40 000 requested); decides whether 40 kHz stays
-- [ ] Then `RATE / STATS / RAW` every second. For **each gain setting (40, 50, 60 dB)** save a separate log of about 10 s each of:
+- [ ] Then `RATE / STATS / RAW` every second. Through the preamp, save a separate log of about 10 s each of:
   - [ ] quiet room (nobody talking) → `STATS` mean = bias in counts; rms = noise
   - [ ] talking at ~30 cm
   - [ ] clap at ~30 cm → does `STATS` min/max reach near 0 / 4095 (clipping)?
   - [ ] phone playing 1 kHz tone at ~30 cm
-  - Name like `2026-10-29_02_gain40_quiet.txt`
-- [ ] → **sets** gain choice (lowest gain that still gives a usable signal for talking; least clipping on claps)
-- [ ] → **sets** `APP_SILENCE_RMS` (a bit above the quiet-room rms at the chosen gain)
+  - Name like `2026-10-30_02_preamp_quiet.txt`
+- [ ] → **decides** whether one preamp stage is enough (talking should move RAW by at least ~±50 counts) or a second stage is needed
+- [ ] → **sets** `APP_SILENCE_RMS` (a bit above the quiet-room rms)
 - [ ] → **checks** `APP_CLIP_MARGIN` (how close to 0/4095 a clap gets)
 - [ ] `python tools/plot_raw.py LOG` on each log: bias / min / max / rms summary + plot. The 1 kHz log should look like a sine with one spectrum peak: evidence for the report
 
@@ -87,7 +87,7 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 
 ### B4. Acoustic path (phone tone app → speaker → mic)
 - [ ] Same tone list as B3, phone at fixed distance (note it) — `tone_stats.py … --path acoustic` into the same CSV, so the plot compares both paths
-- [ ] Loudness / AGC (R7): 1 kHz, phone volume in steps — bar height vs volume
+- [ ] Loudness (R7): 1 kHz, phone volume in steps — bar height vs volume. No AGC now, so this should be close to linear in dB until the preamp clips; may set `APP_DB_PER_ROW`
 - [ ] Latency (R3): slow-mo phone video of a clap next to the display → frames from clap to LEDs
 - [ ] Music + speech demo videos: full mode vs linear mode (same song) — the linear vs hybrid comparison
 
@@ -107,7 +107,7 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 | `APP_ORIENT_*` | all false | A1 |
 | `APP_MAX7219_CLOCK_HZ` | 1 MHz | A1 (optional) |
 | `APP_SAMPLE_RATE_ACTUAL_HZ` | 40 000 | A2 |
-| Mic gain pin | — (wiring) | A2 |
+| Preamp: one or two stages, RB value | 1 stage, 470 kΩ | A2 |
 | `APP_SILENCE_RMS` | 8 | A2 / B1 |
 | `APP_CLIP_MARGIN` | 16 | A2 |
 | `APP_FLOOR_DB` | −60 | B1 |

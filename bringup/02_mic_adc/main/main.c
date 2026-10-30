@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief Bring-up 02 — MAX9814 mic -> continuous ADC.
+ * @brief Bring-up 02 — electret mic + NPN preamp (or generator) -> continuous ADC.
  *
  * Implementation: Claude (Anthropic), to Joe Gould's design and interface;
  *   reviewed and tested on hardware by Joe Gould
@@ -12,8 +12,8 @@
  *        RATE,<measured Hz>
  *        STATS,<mean>,<min>,<max>,<rms>      (raw counts, rms after removing mean)
  *        RAW,<n>,<v0>,...,<vn-1>              (one contiguous frame)
- *      Record quiet room / talking / clap / phone 1 kHz tone at each gain
- *      setting (MAX9814 Gain pin: VDD = 40 dB, GND = 50 dB, open = 60 dB).
+ *      Record quiet room / talking / clap / phone 1 kHz tone through the
+ *      preamp (and a generator tone through the test input).
  */
 #include <math.h>
 #include <stdio.h>

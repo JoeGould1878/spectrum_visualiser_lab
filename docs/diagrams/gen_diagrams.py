@@ -76,18 +76,54 @@ def report_svg(w, h, label, body, style, bg):
 # ---------------------------------------------------------------- 1. circuit
 def circuit():
     b = []
-    # --- MAX9814 module
-    b.append(R(40, 80, 210, 204))
-    b.append(T(56, 104, "MAX9814 mic module", "tb"))
-    b.append(f'<circle cx="92" cy="168" r="22" class="cap"/>')
-    b.append(f'<circle cx="92" cy="168" r="9" class="cap"/>')
-    b.append(T(92, 204, "electret capsule", "ts", "middle"))
-    b.append(T(240, 134, "VDD", "tm", "end"))
-    b.append(T(240, 174, "GND", "tm", "end"))
-    b.append(T(240, 214, "OUT", "tm", "end"))
-    b.append(T(56, 238, "Gain pin: open 60 dB,", "ts"))
-    b.append(T(56, 254, "GND 50 dB, VDD 40 dB", "ts"))
-    b.append(T(56, 270, "A/R open · AGC on chip", "ts"))
+    # --- mic preamp: electret capsule + one NPN, common emitter, collector feedback
+    b.append(R(30, 70, 375, 274))
+    b.append(T(46, 94, "Mic preamp · electret + 1 NPN", "tb"))
+    b.append(R(352, 104, 43, 16, "res", 1))
+    b.append(T(373, 99, "R0 220Ω", "ts", "middle"))
+    b.append(L(352, 112, 100, 112, "w w-p3"))
+    for x in (270, 340): b.append(dot(x, 112))
+    b.append(L(340, 112, 340, 132, "w w-p3"))
+    b.append(L(328, 132, 352, 132, "w w-ink2")); b.append(L(328, 139, 352, 139, "w w-ink2"))
+    b.append(L(340, 139, 340, 152, "w w-gnd")); b.append(gnd(340, 152))
+    b.append(T(340, 186, "C0 100µF", "ts", "middle"))
+    b.append(R(92, 122, 16, 40, "res", 1))
+    b.append(L(100, 162, 100, 216, "w w-ink2"))
+    b.append(T(114, 146, "R1 2.2kΩ", "ts"))
+    b.append(dot(100, 200))
+    b.append('<circle cx="100" cy="232" r="16" class="cap"/>')
+    b.append('<circle cx="100" cy="232" r="6" class="cap"/>')
+    b.append(T(122, 224, "+", "ts")); b.append(T(122, 250, "−", "ts"))
+    b.append(L(100, 248, 100, 258, "w w-gnd")); b.append(gnd(100, 258))
+    b.append(T(100, 286, "electret capsule", "ts", "middle"))
+    b.append(T(100, 300, "(case pin = −)", "ts", "middle"))
+    b.append(L(100, 200, 144, 200, "w w-sig"))
+    b.append(L(144, 188, 144, 212, "w w-ink2")); b.append(L(151, 188, 151, 212, "w w-ink2"))
+    b.append(L(151, 200, 243, 200, "w w-sig"))
+    b.append(T(148, 182, "C1 1µF", "ts", "middle"))
+    b.append(dot(205, 200))
+    b.append(L(270, 112, 270, 122, "w w-p3"))
+    b.append(R(262, 122, 16, 36, "res", 1))
+    b.append(L(270, 158, 270, 176, "w w-ink2"))
+    b.append(T(256, 144, "RC 4.7kΩ", "ts", "end"))
+    b.append(L(245, 184, 245, 216, "w w-ink2"))
+    b.append(P("M245 192L270 178", "w w-ink2"))
+    b.append(P("M245 208L268 222", "w w-ink2", "ink"))
+    b.append(L(270, 222, 270, 258, "w w-gnd")); b.append(gnd(270, 258))
+    b.append(T(275, 286, "Q1 NPN · BC547 / 2N3904", "ts", "middle"))
+    b.append(dot(270, 176))
+    b.append(P("M270 176H232", "w w-ink2"))
+    b.append(R(212, 168, 20, 16, "res", 1))
+    b.append(P("M212 176H205V200", "w w-ink2"))
+    b.append(T(198, 166, "RB 470kΩ", "ts", "end"))
+    b.append(P("M270 176H306V210", "w w-sig"))
+    b.append(dot(306, 210))
+    b.append(L(306, 210, 306, 228, "w w-sig"))
+    b.append(L(294, 228, 318, 228, "w w-ink2")); b.append(L(294, 235, 318, 235, "w w-ink2"))
+    b.append(L(306, 235, 306, 258, "w w-gnd")); b.append(gnd(306, 258))
+    b.append(T(322, 250, "C2 2.2nF", "ts"))
+    b.append(T(46, 316, "Gain ≈ ×35–50 (31–34 dB); collector sits at 1.1–1.9 V.", "ts"))
+    b.append(T(46, 331, "RC + C2 low-pass ≈ 15 kHz (anti-aliasing).", "ts"))
     # --- ESP32-S3
     b.append(R(420, 80, 220, 440, "bx bx-acc"))
     b.append(T(530, 106, "ESP32-S3-WROOM", "tb", "middle"))
@@ -101,18 +137,16 @@ def circuit():
     b.append(T(530, 362, "camera ribbon unplugged", "ts", "middle"))
     b.append(T(530, 486, "USB-C: 5 V in, serial", "ts", "middle"))
     b.append(T(530, 503, "UART0 · 921600 baud", "ts", "middle"))
-    # mic -> ESP wires
-    b.append(L(250, 130, 420, 130, "w w-p3"))
-    b.append(T(300, 123, "3.3 V", "ts"))
-    b.append(L(250, 170, 420, 170, "w w-gnd"))
-    b.append(L(250, 210, 420, 210, "w w-sig"))
-    b.append(T(338, 203, "0.25–2.25 V", "ts", "middle"))
-    for y in (130, 170, 210):
-        b.append(dot(250, y)); b.append(dot(420, y))
+    # preamp -> ESP connections
+    b.append(P("M420 130H408V112H395", "w w-p3"))
+    b.append(L(394, 170, 420, 170, "w w-gnd")); b.append(gnd(394, 170))
+    b.append(L(306, 210, 420, 210, "w w-sig"))
+    b.append(T(355, 203, "≈1.5 V + audio", "ts", "middle"))
+    for y in (130, 170, 210): b.append(dot(420, y))
     # --- electrical test input (dashed)
     b.append(R(40, 360, 350, 310, "bx-dash"))
     b.append(T(56, 384, "Electrical test input", "tb"))
-    b.append(T(56, 402, "use instead of the mic on GPIO1", "ts"))
+    b.append(T(56, 402, "use instead of the preamp on GPIO1", "ts"))
     b.append(T(56, 440, "Function generator", "ts"))
     b.append(T(56, 456, "sine, 1 Vpp, 0 V offset", "ts"))
     b.append(f'<circle cx="80" cy="520" r="20" class="bx"/>')
@@ -148,9 +182,8 @@ def circuit():
     b.append(L(310, 568, 310, 612, "w w-gnd")); b.append(gnd(310, 612))
     b.append(T(322, 590, "C2 2.2 nF", "ts"))
     # to GPIO1 (dashed: alternative)
-    b.append(P("M310 520L310 210", "w w-sig dash"))
-    b.append(dot(310, 210))
-    b.append(T(302, 326, "to GPIO1 instead of mic OUT", "ts", "end"))
+    b.append(P("M310 520L310 350L392 350L392 210", "w w-sig dash"))
+    b.append(dot(392, 210))
     b.append(T(56, 642, "Bias 1.65 V · low-pass f_c ≈ 12 kHz (6 kΩ × 2.2 nF)", "ts"))
     b.append(T(56, 658, "High-pass ≈ 3 Hz (10 µF × 5 kΩ)", "ts"))
     # --- MAX7219
@@ -215,7 +248,7 @@ def hw_high():
     y, h = 90, 100
     blocks = [
         (24, 170, "Sound source", ["voice, music, phone tone", "or function generator"], "bx"),
-        (250, 190, "Input stage", ["MAX9814 mic + AGC", "or bias + RC test input"], "bx"),
+        (250, 190, "Input stage", ["electret + NPN preamp", "or bias + RC test input"], "bx"),
         (520, 230, "ESP32-S3", ["samples at 40 kHz, FFT,", "maps 32 columns, reads buttons"], "bx bx-acc"),
         (800, 176, "LED display", ["4 × MAX7219, 32 × 8", "one column per band"], "bx"),
     ]
@@ -231,7 +264,7 @@ def hw_high():
     b.append(box(650, 270, 210, 64, "Laptop (USB-C)", ["5 V power · flash · serial logs"], center=True, title_dy=27, line_h=19))
     b.append(P("M700 270L700 190", "w w-ink2", "ink"))
     b.append(P("M700 190L700 270", "w w-ink2", "ink"))
-    b.append(T(500, 372, "Power: USB 5 V → board 3.3 V regulator → ESP32-S3 and mic.  5 V goes straight to the display.", "ts", "middle"))
+    b.append(T(500, 372, "Power: USB 5 V → board 3.3 V regulator → ESP32-S3 and mic preamp. 5 V goes straight to the display.", "ts", "middle"))
     return svg(1000, 392, "Spectrum visualiser · hardware overview", "".join(b))
 
 # ---------------------------------------------------------------- 3. hardware detail
@@ -241,7 +274,7 @@ def hw_low():
     b.append(R(240, 66, 520, 420, "ctr", 10))
     b.append(T(256, 90, "ESP32-S3 · dual core, 240 MHz", "tb"))
     # externals left
-    b.append(box(24, 110, 196, 80, "MAX9814 + capsule", ["preamp + AGC, 40/50/60 dB", "out 1.25 V ± 1 V max"]))
+    b.append(box(24, 110, 196, 80, "Electret + NPN preamp", ["gain ≈ ×40, no AGC", "out ≈ 1.5 V DC + audio"]))
     b.append(box(24, 250, 196, 70, "Buttons SW1, SW2", ["MODE, LISTEN · to GND"]))
     b.append(box(24, 400, 196, 70, "Laptop", ["idf.py monitor · tools/*.py"]))
     # internals
@@ -276,14 +309,14 @@ def hw_low():
     # power
     b.append(R(24, 510, 952, 66, "bx"))
     b.append(T(40, 534, "Power", "tb2"))
-    b.append(T(40, 552, "USB 5 V → board 3.3 V regulator → ESP32-S3 and MAX9814 (3.3 V keeps the mic output inside the ADC range).", "ts"))
+    b.append(T(40, 552, "USB 5 V → board 3.3 V regulator → ESP32-S3, and via a 220 Ω + 100 µF filter → mic preamp (keeps digital noise off the mic).", "ts"))
     b.append(T(40, 568, "USB 5 V → MAX7219 module. Its logic inputs get 3.3 V, below the 3.5 V spec: watch for glitches, buffer if needed.", "ts"))
     return svg(1000, 596, "Spectrum visualiser · hardware detail", "".join(b))
 
 # ---------------------------------------------------------------- 4. firmware overview
 def fw_high():
     b = []
-    b.append(R(24, 64, 290, 40, "pill", 20)); b.append(T(169, 89, "MAX9814 → ADC1 (DMA, 40 kHz)", "ts", "middle"))
+    b.append(R(24, 64, 290, 40, "pill", 20)); b.append(T(169, 89, "Mic preamp → ADC1 (DMA, 40 kHz)", "ts", "middle"))
     b.append(R(524, 64, 290, 40, "pill", 20)); b.append(T(669, 89, "MAX7219 × 4 over SPI · 32 × 8", "ts", "middle"))
     # audio task
     b.append(R(24, 144, 290, 178, "bx bx-acc"))
@@ -345,7 +378,7 @@ def fw_low():
     audio = [
         ("adc_sampler_read()", "1024 raw 12-bit samples = 25.6 ms at 40 kHz (bass mode: 2048)"),
         ("frame stats", "min/max → clipping flag · RMS → silence flag"),
-        ("remove DC", "subtract the frame mean (the mic's ≈ 1.25 V bias)"),
+        ("remove DC", "subtract the frame mean (the preamp's ≈ 1.5 V bias)"),
         ("decimate · bass mode only", "63-tap Blackman low-pass, keep 1 in 4 → 10 kHz"),
         ("Hann window", "dsps_wind_hann_f32: less leakage into neighbouring columns"),
         ("FFT", "dsps_fft2r_fc32 + bit reversal, N = 1024 (bass 512)"),

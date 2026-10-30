@@ -6,7 +6,7 @@
  *
  * Steps, in order (each one is a design decision with its own evidence):
  *   1. Frame stats on the raw samples (min/max for clipping, RMS for silence).
- *   2. Convert to float and remove the DC offset (MAX9814 bias ~1.25 V).
+ *   2. Convert to float and remove the DC offset (mic preamp bias ~1.5 V).
  *   3. Optional decimation: low-pass filter, then keep every Nth sample
  *      (bass/voice mode — finer bins; the filter stops aliasing).
  *   4. Optional Hann window (leakage test: window on vs off).

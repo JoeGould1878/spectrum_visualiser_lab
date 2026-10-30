@@ -2,7 +2,7 @@
 
 Audio-reactive spectrum display on a 32 × 8 LED matrix — Mini-Challenge 2 (CDIO), 2026.
 
-A MAX9814 microphone feeds an ESP32-S3; the firmware samples it continuously, takes an FFT and shows the spectrum as 32 bars. The aim is an *honest* display for a teaching lab: a tone you play lands in the right column, and the display says when it can't be trusted (silence, clipping, out of range).
+An electret microphone with a one-transistor preamp feeds an ESP32-S3; the firmware samples it continuously, takes an FFT and shows the spectrum as 32 bars. The aim is an *honest* display for a teaching lab: a tone you play lands in the right column, and the display says when it can't be trusted (silence, clipping, out of range).
 
 **Status:** skeleton only — headers, build files and docs. Implementation is written one component at a time. See [`docs/CONTEXT.md`](docs/CONTEXT.md) for where things are and [`docs/PLAN.md`](docs/PLAN.md) for the Conceive/Design plan.
 
@@ -11,7 +11,7 @@ A MAX9814 microphone feeds an ESP32-S3; the firmware samples it continuously, ta
 | Part | Notes |
 | --- | --- |
 | Freenove ESP32-S3-WROOM | camera ribbon unplugged |
-| MAX9814 electret mic module | AGC; 1.25 V bias output; powered from 3.3 V |
+| Electret capsule + NPN preamp | one BC547/2N3904, gain ≈ ×35–50, output ≈ 1.5 V DC + audio, no AGC; schematic in `docs/diagrams/circuit.png` |
 | 4-in-1 MAX7219 LED matrix (32 × 8) | 5 V |
 | Push buttons × 2 | mode, listen on/off |
 

@@ -11,8 +11,8 @@
  *    fall_rows_per_s (slow fall), so they don't flicker.
  *  - Peak dots: the highest recent level is held for peak_hold_s, then falls.
  *
- * Deliberately no automatic gain: the MAX9814 already has AGC, and a second
- * AGC would hide loudness completely (decision log, 29/10).
+ * Deliberately no automatic gain: bar height should show real loudness so the
+ * display is honest about level (decision log, 29/10 and 30/10).
  */
 #pragma once
 

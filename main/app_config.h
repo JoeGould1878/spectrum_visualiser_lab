@@ -14,7 +14,7 @@
 #pragma once
 
 /* ---------------- Pins (confirm at bring-up) ---------------- */
-#define APP_PIN_MIC              1    /* MAX9814 OUT -> GPIO1 = ADC1 channel 0 */
+#define APP_PIN_MIC              1    /* NPN preamp collector -> GPIO1 = ADC1 channel 0 */
 #define APP_PIN_MAX7219_DIN      11
 #define APP_PIN_MAX7219_CLK      12
 #define APP_PIN_MAX7219_CS       10

@@ -50,23 +50,34 @@ Record:
 - [ ] Log of the 5-minute soak (`write_avg` / `write_max`); any random pixels? (3.3 V logic into a 5 V chip — if yes, plan the 74HCT125 buffer)
 - [ ] Optional: repeat the soak at `APP_MAX7219_CLOCK_HZ` = 4 MHz and 10 MHz; note the fastest that stays clean
 
-## 02 — MAX9814 mic → ADC (`02_mic_adc/`)
+## 02 — Mic preamp → ADC (`02_mic_adc/`)
 
-Needs: `components/adc_sampler` written first.
+Needs: `components/adc_sampler` written first. Schematic: `docs/diagrams/circuit.png` (top-left box).
 
-| MAX9814 pin | Connect to |
-| --- | --- |
-| VDD | 3.3 V (keeps the output inside the ADC range) |
-| GND | GND |
-| OUT | GPIO 1 (ADC1) |
-| Gain | open = 60 dB, GND = 50 dB, VDD = 40 dB |
-| A/R | open (default 1:4000) |
+The MAX9814 never arrived, so the mic is a bare electret capsule with a one-NPN preamp (common emitter, collector feedback):
 
-Expected: `RATE,…` once a second near the requested rate; `RAW,…` values centred around the 1.25 V bias.
+| Part | Value | Connects |
+| --- | --- | --- |
+| R0 | 220 Ω | 3V3 → filtered rail (with C0) |
+| C0 | 100 µF electrolytic | filtered rail → GND (+ to the rail) |
+| R1 | 2.2 kΩ | filtered rail → capsule + (powers the capsule) |
+| Capsule | electret | + to R1/C1, − (pin tied to the metal case) to GND |
+| C1 | 1 µF | capsule + → Q1 base |
+| Q1 | NPN, BC547 / 2N3904 | emitter → GND; **check the pinout for your part** |
+| RB | 470 kΩ | Q1 collector → Q1 base (sets the bias) |
+| RC | 4.7 kΩ | filtered rail → Q1 collector |
+| C2 | 2.2 nF | Q1 collector → GND (anti-aliasing with RC, ≈ 15 kHz) |
+| Output | — | Q1 collector → GPIO 1 |
+
+Before running: with the mic connected and the room quiet, measure the collector with a multimeter. Expect **1.1–1.9 V**. Too low → RB 680 kΩ; too high → RB 330 kΩ. Record the value.
+
+Expected: `RATE,…` once a second near the requested rate; `RAW,…` values centred on the collector voltage (≈ 1500–2400 counts).
 
 Record:
 
 - [ ] Requested vs measured sample rate (try 3–4 rates, note where it stops keeping up)
-- [ ] Raw logs: quiet room / talking / clap / phone 1 kHz tone, at each gain setting
+- [ ] Collector voltage (multimeter) and the transistor part number
+- [ ] Raw logs: quiet room / talking / clap / phone 1 kHz tone (phone at a noted distance)
 - [ ] Mean value in silence (the bias in raw counts) and where clipping starts
+- [ ] If talking barely moves the RAW values, note it: that's the case for a second gain stage
 - [ ] Plot one 1 kHz frame in Python — does it look like a sine wave?

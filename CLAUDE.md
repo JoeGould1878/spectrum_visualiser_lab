@@ -4,7 +4,7 @@ Guidance for Claude when working in this repository.
 
 ## Project
 
-Audio-reactive spectrum visualiser (Mini-Challenge 2, CDIO) — ESP32-S3 + MAX9814 mic + 32×8 MAX7219, ESP-IDF v6, C.
+Audio-reactive spectrum visualiser (Mini-Challenge 2, CDIO) — ESP32-S3 + electret mic with NPN preamp + 32×8 MAX7219, ESP-IDF v6, C.
 The assessment is on the **engineering process and evidence**, not the product. Read `docs/CONTEXT.md` first, then `docs/PLAN.md`.
 
 ## How we work
@@ -54,5 +54,5 @@ Environment: Debian 13, ESP-IDF v6, VS Code. Board enumerates as `/dev/ttyACM0`.
 
 - Freenove ESP32-S3: unplug the camera (uses GPIO 4–13, 15–18). Avoid GPIO 2 (LED), 0/3/45/46 (strapping), 19/20 (USB), 35–37 (PSRAM).
 - ADC continuous mode: ADC1 pins only (GPIO 1–10); check the rate limit in `soc/soc_caps.h`.
-- MAX9814 has its own AGC — don't add software auto-gain.
+- Mic is a bare electret capsule with a one-NPN preamp (no MAX9814, no AGC). Bar height is true loudness; don't add software auto-gain (it would hide that).
 - MAX7219 at 5 V with 3.3 V logic is below spec; watch for random pixels.

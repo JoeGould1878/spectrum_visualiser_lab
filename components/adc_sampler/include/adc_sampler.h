@@ -13,8 +13,8 @@
  *  - Use an ADC1 pin (GPIO 1-10). ESP-IDF no longer supports ADC2 with DMA.
  *  - The allowed rate range is SOC_ADC_SAMPLE_FREQ_THRES_LOW/HIGH in
  *    soc/soc_caps.h — check it before choosing APP_SAMPLE_RATE_HZ.
- *  - MAX9814 output sits on a ~1.25 V bias with ~2 Vpp max, so it needs the
- *    attenuation setting that covers about 0-2.5 V.
+ *  - The mic preamp's output sits on a ~1.5 V bias and can swing most of the
+ *    3.3 V rail, so it needs the widest attenuation setting (~0-3.1 V).
  *
  * Measure the real rate (adc_sampler_measured_rate_hz) — never trust the
  * requested one. That is test "Real sample rate" in docs/PLAN.md.

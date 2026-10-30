@@ -26,9 +26,9 @@ static const char *TAG = "adc_sampler";
 #define POOL_BYTES          (CONV_FRAME_BYTES * 16)     /* ~100 ms of slack at 40 kHz */
 
 /*
- * 12 dB attenuation: the S3 measures roughly 0-3.1 V. The MAX9814 swings
- * 1.25 V +/- 1 V (0.25-2.25 V); 6 dB attenuation only reaches ~1.75 V and
- * would clip the top of every loud waveform.
+ * 12 dB attenuation: the S3 measures roughly 0-3.1 V. The NPN preamp's
+ * collector sits at ~1.1-1.9 V and swings up to ~0.2-3.0 V on loud sounds;
+ * 6 dB attenuation only reaches ~1.75 V and would clip the top of the waveform.
  */
 #define ADC_ATTEN           ADC_ATTEN_DB_12
 
