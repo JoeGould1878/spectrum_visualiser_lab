@@ -27,7 +27,8 @@
 #define APP_MAX7219_CLOCK_HZ     (1 * 1000 * 1000)   /* start slow, raise once stable */
 #define APP_DISPLAY_COLS         32
 #define APP_DISPLAY_ROWS         8
-#define APP_BRIGHTNESS_DEFAULT   2                   /* 0..15, low = less power */
+#define APP_BRIGHTNESS_DEFAULT   0                   /* 0..15. 0 since 05/11: display interference is ~27 dB lower than at 15
+                                                        (2026-11-05_B1_covered_b15/b0.txt); APP_FLOOR_DB is measured at 0 */
 /* Orientation of the 4-in-1 module: fixed at compile time (05/11), not
  * changeable from the buttons or NVS. Set from the bring-up 01 probe,
  * evidence docs/evidence/logs/2026-11-05_A1_probe.txt and
@@ -58,8 +59,10 @@
 #define APP_BASS_F_MAX_HZ        2500.0f   /* not used since 05/11 */
 
 /* ---------------- Levels (MEASURE) ---------------- */
-#define APP_FLOOR_DB             (-46.0f)   /* 2026-10-30_B1_quiet_room: typical column p95 -49 dB, +3 dB.
-                                               (-21 was the loudest column = 700 Hz display interference) */
+#define APP_FLOOR_DB             (-40.0f)   /* 2026-11-05_B1_covered_b0: LM358, mic covered, brightness 0, LOG:
+                                               typical column p95 -42.6 dB, +3 dB. Interference columns 11-12 and
+                                               28-29 (p95 -33..-36 dB) excluded: known limitation, they show
+                                               ~2 rows in silence. (Was -46 from a 30/10 log: NPN preamp, bass mode) */
 #define APP_DB_PER_ROW           3.0f       /* 8 rows = 24 dB: electret preamp is quiet, speech needs the range */
 #define APP_FALL_ROWS_PER_S      20.0f
 #define APP_PEAK_HOLD_S          0.5f
@@ -68,7 +71,7 @@
 /* ---------------- Status row thresholds (MEASURE) ---------------- */
 #define APP_SILENCE_RMS          8.0f       /* MEASURE: raw counts */
 #define APP_CLIP_MARGIN          16         /* raw within this of 0 or 4095 = clipping */
-#define APP_TONE_MIN_DB          (-36.0f)   /* floor + 10 dB: below this the tone finder shows "---" */
+#define APP_TONE_MIN_DB          (-30.0f)   /* floor + 10 dB: below this the tone finder reports no tone */
 #define APP_TONE_F_MIN_HZ        50.0f      /* tone-finder ignores bins below this (DC, rumble) */
 /* "Above range" pixel: strongest peak above the displayed range is louder than
  * APP_TONE_MIN_DB and within this many dB of the strongest in-range column. */

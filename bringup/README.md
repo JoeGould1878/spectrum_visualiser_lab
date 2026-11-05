@@ -125,4 +125,6 @@ Fixes, in order of effort:
 
 **Measured 05/11 (LM358 ×101, mic covered, LOG mode)**, logs `2026-11-05_B1_covered_b15.txt` / `_b0.txt`: at brightness 15 the worst columns (10–11, ≈ 600 Hz) read −5.8 dB p95 and 7 % of frames clip; at brightness 0 the worst column is −32.8 dB, the typical column drops from −29.9 to −42.6 dB and nothing clips. A ≈ 27 dB drop from LED current alone, while the SPI data is the same at both levels, so the coupling is through the supply/ground current pulses, not the data wires. Fixes 1–2 are the real cure; brightness 0 is the stop-gap.
 
+**Decision 05/11:** fixes 1–3 not attempted (time); the interference is a known limitation, mitigated by fix 4 (brightness default 0). See the PLAN decision log.
+
 Check: quiet-room log with `tools/frames.py` — the WARNING line about interference columns should disappear, or the listed columns drop towards the rest.

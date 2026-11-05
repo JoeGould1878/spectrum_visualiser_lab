@@ -71,6 +71,8 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 
 **30/10 result:** the quiet-room log showed peaks at 700 / 1400 / 2100 / 2800 Hz, 25–30 dB above the room. That's the MAX7219 row scan (~700 Hz) coupling into the mic preamp through the shared supply/ground. Fix is in the wiring (see `bringup/README.md`, "Display interference"); re-run B1 after it and compare the two heatmaps: good before/after evidence. `tools/frames.py` now flags such columns instead of using them as the floor.
 
+**05/11 result (LM358):** the lab isn't quiet, so B1 was done with the mic covered. The interference now dominates (≈ 600 Hz, −5.8 dB at brightness 15, −32.8 dB at brightness 0). Accepted as a **known limitation**: brightness default 0, floor −40 dB from the brightness-0 log; columns 11–12 and 28–29 still show ≈ 2 rows in silence. See the PLAN decision log.
+
 ### B2. Real frame rate, processing time, latency budget
 - [ ] `python tools/frames.py LOG` on any log: frame rate (R4 ≥ 20), processing time, sample rate, display/latency stats, status-flag %
 - [ ] `DISPLAY,<fps>,<age_avg_ms>,<age_max_ms>,<write_us>` lines: display refresh (expect ~40), frame age, SPI write time
@@ -111,6 +113,6 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 | Preamp: one or two stages, RB value | 1 stage, 470 kΩ | A2 |
 | `APP_SILENCE_RMS` | 8 | A2 / B1 |
 | `APP_CLIP_MARGIN` | 16 | A2 |
-| `APP_FLOOR_DB` | −46 (from 30/10 B1 log: old NPN preamp, bass/voice mode; redo with the LM358) | B1 |
-| `APP_TONE_MIN_DB` | −36 (floor + 10 dB) | B1 |
+| `APP_FLOOR_DB` | **set 05/11**: −40 (`2026-11-05_B1_covered_b0.txt`, mic covered, brightness 0) | B1 |
+| `APP_TONE_MIN_DB` | **set 05/11**: −30 (floor + 10 dB) | B1 |
 | `APP_FALL_ROWS_PER_S`, `APP_PEAK_*` | 20 / 0.5 s / 6 | B4 videos (tune by eye, note before/after) |

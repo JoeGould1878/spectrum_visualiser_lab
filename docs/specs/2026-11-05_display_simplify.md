@@ -168,11 +168,13 @@ Commit in steps, each message saying what changed and why: (1) probe; (2) two mo
 
 ## 6. Done when
 
-- [ ] Every power-up shows the same picture: staircase from bottom-left to top-right, then 32 bars with lows on the left. This holds after reflashing too, with no button presses.
-- [ ] Only two modes exist, both horizontal. A MODE short press toggles LOG ↔ LINEAR (remembered after power-off), a long press changes brightness, and LISTEN stops/starts. No button can change the orientation.
-- [ ] Builds clean; host tests pass, including the new orientation test; the `grep` in T8 finds nothing.
-- [ ] `APP_ORIENT_*` and `APP_FLOOR_DB` each have a comment naming the evidence file that set them.
-- [ ] PLAN decision log, CONTEXT, LAB_TESTS, README, CLAUDE.md and the diagrams match the new behaviour.
+- [x] Every power-up shows the same picture: staircase from bottom-left to top-right, then 32 bars with lows on the left. This holds after reflashing too, with no button presses.
+- [x] Only two modes exist, both horizontal. A MODE short press toggles LOG ↔ LINEAR (remembered after power-off), a long press changes brightness, and LISTEN stops/starts. No button can change the orientation.
+- [x] Builds clean; host tests pass, including the new orientation test; the `grep` in T8 finds nothing.
+- [x] `APP_ORIENT_*` and `APP_FLOOR_DB` each have a comment naming the evidence file that set them.
+- [x] PLAN decision log, CONTEXT, LAB_TESTS, README, CLAUDE.md and the diagrams match the new behaviour.
+
+**Status 05/11:** done. Hardware checks from `2026-11-05_first_run.txt`; floor from `2026-11-05_B1_covered_b0.txt`. Still open from §5: LOG vs LINEAR logs + video (step 4).
 
 ## 7. Not in scope
 
