@@ -1,4 +1,4 @@
-# Spec: simplify the display (one mode, fixed orientation)
+# Spec: simplify the display (two modes, LOG and LINEAR, fixed horizontal orientation)
 
 **For:** Claude Code, working in this repo. **Written by:** Claude (planner), 5 Nov 2026, at Joe's request.
 **Status:** scope agreed with Joe on 5 Nov ("simplify it"). Joe asked for this change himself, so it counts as his go-ahead under CLAUDE.md's "ask Joe first" rule. Add the decision-log rows from §3 to `docs/PLAN.md` as you implement.
@@ -16,18 +16,18 @@ Read `CLAUDE.md`, `docs/CONTEXT.md` and this file. Do the tasks in order; T1 nee
   - The saved orientation in NVS survives reflashing, so a wrong one keeps coming back.
   - MODE cycles full / bass-voice / linear. Bass-voice and linear look like "random stuff" to a viewer because the column map changes each time.
 
-**Goal:** one picture, always the same, after every power-up. The strip is horizontal and has 32 bars. Low notes are on the left. Bars rise from the bottom edge.
+**Goal:** the same horizontal picture after every power-up: 32 bars, low notes on the left, bars rising from the bottom edge. **Two modes only** (Joe, 5 Nov): a **log** frequency axis and a **linear** frequency axis. Both are horizontal and use the same orientation; only the column map changes.
 
 ## 2. Target behaviour (what the board does after this change)
 
 | | Behaviour |
 | --- | --- |
 | Power-up | **Boot check:** a staircase for 1.5 s. It rises from bottom-left to top-right, so you can see the orientation is right. Then live bars. |
-| Display | One mode: 32 bars, hybrid-log columns 100 Hz – 8 kHz (current FULL mode). No peak dots, no status pixels, no digits. |
+| Display | Two modes, both 32 bars over 100 Hz – 8 kHz with the same FFT (1024 points, 39 Hz bins). **LOG** = hybrid-log columns (current FULL mode); **LINEAR** = equal-width columns (current LINEAR mode). No peak dots, no status pixels, no digits. |
 | Orientation | Fixed at compile time in `app_config.h`, set once from the T1 probe. **Not** changeable from the buttons or NVS. |
-| MODE button | Short press = next brightness (0, 2, 5, 9, 15), saved in NVS. Long press = nothing. |
+| MODE button | Short press = toggle LOG ↔ LINEAR, saved in NVS. Long press = next brightness (0, 2, 5, 9, 15), saved. |
 | LISTEN button | Short press = stop / start listening (as now: display blanks while stopped). Long press = nothing. |
-| NVS | Brightness only. |
+| NVS | Mode (LOG/LINEAR) and brightness. Power-up default: LOG. |
 | Serial | Unchanged formats (`FRAME`, `TONE`, `RATE`, `DISPLAY`, `RAW`) so `tools/*.py` keep working. |
 
 ## 3. Decisions (copy into the PLAN decision log, date 05/11)
@@ -36,10 +36,9 @@ Read `CLAUDE.md`, `docs/CONTEXT.md` and this file. Do the tasks in order; T1 nee
 | --- | --- | --- |
 | Orientation found by a **raw-register probe** (4 single LEDs), then fixed in `app_config.h` | Keep stepping through 16 orientations by eye | Three single-LED photos fully decide the 4 flags, with no guessing. The result is evidence for the report and can't drift. |
 | Orientation **not** stored in NVS; no button for it | LISTEN long press + NVS (30/10) | A wrong saved value kept coming back after reflashing. The mounting never changes, so a compile-time constant is enough. |
-| **One display mode** (hybrid log 100 Hz – 8 kHz) | MODE cycles full / bass / linear | Viewers read the other modes as random. One mode is easier to explain in the demo. |
-| Linear mapping kept as a **compile-time** switch `APP_BAND_MAPPING` | Runtime mode | Still needed for the log-vs-linear evidence test (the "significant decision" in PLAN). Flash twice, record both. |
-| MODE short press = brightness | Brightness on a long press | It's the only setting left, so it gets the easy press. |
-| NVS namespace renamed (e.g. `"sv2"`) | Erase flash by hand | Old `mode` = 2 and `orient` = 9 values on Joe's board can't leak back in. |
+| **Two display modes: LOG and LINEAR**, same range (100 Hz – 8 kHz) and FFT | Full / bass / linear (+ tone finder) | Joe's choice, 5 Nov. Bass/voice changed the FFT and the range, so it looked random. With the same range and only the axis changing, a press shows exactly what the log axis does. That is the log-vs-linear decision shown live in the demo. |
+| MODE short = toggle the mode, MODE long = brightness | Brightness on the short press | The mode is what the demo uses; brightness is set once. |
+| NVS namespace renamed (e.g. `"sv2"`) | Erase flash by hand | Old `mode` = 2 (bass) and `orient` = 9 values on Joe's board can't leak back in. |
 | Bass/voice mode and tone-finder display removed from `main/` | Keep behind flags | Dead paths behind flags were part of the confusion. The `tone_finder` component and `TONE` lines stay, because the accuracy tests use them. |
 
 ## 4. Tasks
@@ -90,26 +89,27 @@ If either check fails, stop and tell Joe: the chain or the driver's device order
 - `display_task` builds its `frame_orient_t` once from the four `APP_ORIENT_*` flags.
 - `APP_STAIRCASE_BOOT_MS 1500`: show the staircase once at power-up (this is the boot check), and log `ORIENT fixed: R=.. FX=.. FY=.. T=..`.
 
-### T3 — One display mode
+### T3 — Two display modes: LOG and LINEAR
 
-- Add `APP_BAND_MAPPING` to `app_config.h` with value `BAND_MAP_HYBRID_LOG` (or `BAND_MAP_LINEAR` for the evidence test only). Comment it: "flash with LINEAR for the log-vs-linear test, then set it back".
-- In `audio_task`, configure once at start: FFT 1024, no decimation, `APP_FULL_F_MIN_HZ`–`APP_FULL_F_MAX_HZ`, `APP_BAND_MAPPING`. Remove the runtime mode switch, `audio_task_set_mode()` and the bass/voice setup.
-- Keep the `mode` field in the `FRAME` line so `tools/logparse.py` still parses it. Send `0` for hybrid log and `3` for linear (the old enum numbers), so old logs and new logs mean the same thing in `frames.py`.
-- You can shrink `app_mode_t` or replace it with the band-mapping value. Choose whichever keeps the change smallest, and update the headers' doc comments if a signature changes (and say so in the commit).
-- Leave the bass/voice constants (`APP_FFT_N_BASS`, `APP_DECIMATE_BASS`, `APP_BASS_*`) and the decimation code in `spectrum` in place, but unused. Mark them in a comment as "not used since 05/11".
+- Exactly two modes. Reduce `app_mode_t` to `APP_MODE_LOG = 0` and `APP_MODE_LINEAR = 3`. Using the old enum numbers keeps the `mode` field in the `FRAME` line meaning the same as in older logs, so `tools/logparse.py` and `frames.py` keep working; update the name table in `frames.py`. Change `APP_MODE_COUNT` and the "next mode" code to match.
+- Both modes: FFT 1024, no decimation, range `APP_FULL_F_MIN_HZ`–`APP_FULL_F_MAX_HZ` (100 Hz – 8 kHz). The only difference is `BAND_MAP_HYBRID_LOG` versus `BAND_MAP_LINEAR` in `band_map_build()`. Make the linear range use the same constants, so the two modes can't drift apart.
+- Keep `audio_task_set_mode()` and the existing re-configure-on-change path. It only rebuilds the column map now, and still logs the column edges, which the R2 accuracy test needs.
+- `display_task` already clears the bars when the mode changes; keep that. Draw no mode indicator on the LEDs; the serial log line `mode -> LOG` / `mode -> LINEAR` is enough.
+- Remove the bass/voice and tone-finder modes from `main/`. Leave the bass constants (`APP_FFT_N_BASS`, `APP_DECIMATE_BASS`, `APP_BASS_*`) and the decimation code in `spectrum` in place, but unused, with a comment "not used since 05/11". If any header signature changes, update its doc comment and say so in the commit.
 
 ### T4 — Buttons
 
 - In `input_task`:
-  - MODE short press = next brightness from `APP_BRIGHTNESS_STEPS`, then save;
+  - MODE short press = toggle LOG ↔ LINEAR (`audio_task_set_mode`), then save;
+  - MODE long press = next brightness from `APP_BRIGHTNESS_STEPS`, then save;
   - LISTEN short press = stop/start (as now);
-  - both long presses do nothing.
+  - LISTEN long press does nothing.
 - Log every action at INFO level so a log shows what was pressed.
 
 ### T5 — Settings / NVS
 
-- `settings_t` holds `brightness` only. Rename the NVS namespace so old keys are ignored.
-- Update `settings.h` doc comments, and `main.c`, which no longer passes a mode or orientation.
+- `settings_t` holds `mode` (LOG/LINEAR) and `brightness`; remove `orient`. Rename the NVS namespace so old keys are ignored. Any saved value that isn't LOG or LINEAR loads as LOG.
+- Update `settings.h` doc comments, and `main.c`, which no longer passes an orientation.
 
 ### T6 — Remove the dead display paths
 
@@ -126,7 +126,7 @@ Update all of these:
 - `docs/CONTEXT.md` log.
 - The decision-log rows from §3 in `docs/PLAN.md`.
 - Diagrams: in `docs/diagrams/gen_diagrams.py`, update:
-  - the input lane in `fw_flow()`: two actions (MODE → brightness, LISTEN → stop/start), and the dashed request labels become "listening" and "brightness";
+  - the input lane in `fw_flow()`: three actions (MODE short → log/linear, MODE long → brightness, LISTEN short → stop/start), and the dashed request labels become "mode, listening" and "brightness";
   - the display lane text "apply new brightness / rotation" → "apply new brightness";
   - the `fw_low()` "orientation" and "Modes" lines;
   - the button descriptions in `circuit()`.
@@ -140,10 +140,10 @@ Update all of these:
 idf.py build                                   # main firmware, no warnings
 (cd bringup/01_matrix && idf.py build)
 (cd host_tests && make)                        # all pass, incl. the new orientation test
-grep -rn "set_orientation\|APP_SHOW_\|TONE_FINDER\|BASS_VOICE" main/   # should print nothing
+grep -rn "set_orientation\|APP_SHOW_\|TONE_FINDER\|BASS_VOICE\|APP_MODE_FULL" main/   # should print nothing
 ```
 
-Commit in steps, each message saying what changed and why: (1) probe; (2) one mode + buttons + NVS; (3) fixed orientation once Joe answers; (4) docs and diagrams.
+Commit in steps, each message saying what changed and why: (1) probe; (2) two modes + buttons + NVS; (3) fixed orientation once Joe answers; (4) docs and diagrams.
 
 ## 5. What Joe does on the hardware
 
@@ -157,19 +157,19 @@ Commit in steps, each message saying what changed and why: (1) probe; (2) one mo
    - Tell Claude Code the four answers; it does T2.
 2. **Main firmware (after T2–T6):** `idf.py build flash -p /dev/ttyACM0 monitor`.
    - Check: the boot staircase rises bottom-left → top-right; then talking or whistling moves the bars.
-   - Check: a low hum lights the left bars and a whistle lights the right bars; MODE changes brightness; LISTEN blanks and restores.
+   - Check: a low hum lights the left bars and a whistle lights the right bars; a MODE short press switches LOG ↔ LINEAR; a long press changes brightness; LISTEN blanks and restores.
    - Take a short video: `docs/evidence/videos/2026-11-05_B_bars.mp4`.
 3. **Re-set the noise floor.** The new preamp has much more gain, and the 5 Nov photos show many LEDs lit.
    - Record a 30 s quiet-room log with the display running: `docs/evidence/logs/2026-11-05_B1_quiet_lm358.txt`.
    - Run `python3 tools/frames.py <log>` and set `APP_FLOOR_DB` from its suggestion. Note the 700 Hz interference warning if it appears.
 4. **Log vs linear evidence:**
-   - Flash once with `APP_BAND_MAPPING BAND_MAP_LINEAR`. Record the same sweep or music clip as with hybrid log, and take a photo or video of each.
-   - Set it back to hybrid log afterwards.
+   - Play the same function-generator sweep (100 Hz → 8 kHz) or music clip in each mode and record a log of each: `2026-11-05_R_log.txt` and `2026-11-05_R_linear.txt`.
+   - Take a video while pressing MODE mid-sound. In LINEAR mode speech should crowd into the left few columns; in LOG mode it should spread across the strip.
 
 ## 6. Done when
 
 - [ ] Every power-up shows the same picture: staircase from bottom-left to top-right, then 32 bars with lows on the left. This holds after reflashing too, with no button presses.
-- [ ] No button can change the orientation or the mode. MODE changes brightness; LISTEN stops/starts.
+- [ ] Only two modes exist, both horizontal. A MODE short press toggles LOG ↔ LINEAR (remembered after power-off), a long press changes brightness, and LISTEN stops/starts. No button can change the orientation.
 - [ ] Builds clean; host tests pass, including the new orientation test; the `grep` in T8 finds nothing.
 - [ ] `APP_ORIENT_*` and `APP_FLOOR_DB` each have a comment naming the evidence file that set them.
 - [ ] PLAN decision log, CONTEXT, LAB_TESTS, README, CLAUDE.md and the diagrams match the new behaviour.
