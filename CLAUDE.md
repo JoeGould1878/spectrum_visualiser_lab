@@ -57,4 +57,4 @@ Environment: Debian 13, ESP-IDF v6, VS Code. Board enumerates as `/dev/ttyACM0`.
 - Mic is a bare electret capsule with an LM358 preamp on 3.3 V (no MAX9814, no AGC). Bar height is true loudness; don't add software auto-gain (it would hide that).
 - MAX7219 at 5 V with 3.3 V logic is below spec; watch for random pixels.
 - The MAX7219 row scan (~700 Hz) couples into the mic preamp via shared supply/ground: tones at multiples of ~700 Hz in a quiet room are interference, not sound (see `bringup/README.md`).
-- Display orientation can be changed on the board (LISTEN long press, saved in NVS); `APP_ORIENT_*` is only the default.
+- Display orientation is fixed in `APP_ORIENT_*`, found with the bring-up 01 probe (05/11: strip horizontal, wire end on the right).

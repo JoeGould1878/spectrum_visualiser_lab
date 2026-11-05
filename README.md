@@ -13,7 +13,7 @@ An electret microphone with a one-transistor preamp feeds an ESP32-S3; the firmw
 | Freenove ESP32-S3-WROOM | camera ribbon unplugged |
 | Electret capsule + LM358 preamp | gain ×101 (one stage) or ×1100 (two), output ≈ 1.0 V DC + audio, no AGC; schematics in `docs/diagrams/preamp-1.png` / `preamp-2.png` |
 | 4-in-1 MAX7219 LED matrix (32 × 8) | 5 V |
-| Push buttons × 2 | mode, listen on/off |
+| Push buttons × 2 | MODE: short = LOG ↔ LINEAR, long = brightness; LISTEN: short = stop/start |
 
 Pins: [`main/app_config.h`](main/app_config.h). Wiring per part: [`bringup/README.md`](bringup/README.md).
 
@@ -28,7 +28,7 @@ spectrum_visualiser/
 │   ├── adc_sampler/     ESP32-S3 continuous (DMA) ADC
 │   ├── spectrum/        DC removal, decimation, window, FFT (esp-dsp)
 │   ├── band_map/        FFT bins -> 32 columns (linear / hybrid log)   [pure C]
-│   ├── bar_model/       dB -> bar height, smoothing, peak dots         [pure C]
+│   ├── bar_model/       dB -> bar height, smoothing                     [pure C]
 │   ├── tone_finder/     strongest frequency in Hz                      [pure C]
 │   ├── frame_gfx/       32x8 drawing, text, matrix orientation         [pure C]
 │   └── button/          debounced buttons

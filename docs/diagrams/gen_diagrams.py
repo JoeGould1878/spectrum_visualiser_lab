@@ -191,8 +191,8 @@ def circuit():
     for y in (130, 170, 230, 270, 310):
         b.append(dot(640, y)); b.append(dot(780, y))
     # --- buttons
-    for y, name, desc in [(400, "SW1 · MODE", "short: mode · long: brightness"),
-                          (450, "SW2 · LISTEN", "stops / restarts sampling")]:
+    for y, name, desc in [(400, "SW1 · MODE", "short: log/linear · long: brightness"),
+                          (450, "SW2 · LISTEN", "short: stops / restarts sampling")]:
         b.append(L(640, y, 700, y, "w w-ink2"))
         b.append(dot(640, y))
         b.append(f'<circle cx="702" cy="{y}" r="2.5" class="pin"/>')
@@ -355,23 +355,22 @@ def fw_high():
 def fw_low():
     b = []
     audio = [
-        ("adc_sampler_read()", "1024 raw 12-bit samples = 25.6 ms at 40 kHz (bass mode: 2048)"),
+        ("adc_sampler_read()", "1024 raw 12-bit samples = 25.6 ms at 40 kHz"),
         ("frame stats", "min/max → clipping flag · RMS → silence flag"),
         ("remove DC", "subtract the frame mean (the preamp's ≈ 1.0 V bias)"),
-        ("decimate · bass mode only", "63-tap Blackman low-pass, keep 1 in 4 → 10 kHz"),
         ("Hann window", "dsps_wind_hann_f32: less leakage into neighbouring columns"),
-        ("FFT", "dsps_fft2r_fc32 + bit reversal, N = 1024 (bass 512)"),
-        ("magnitude → dBFS", "512 bins × 39.1 Hz (bass 256 × 19.5 Hz); 0 dB = full-scale sine"),
-        ("band_map_apply()", "loudest bin per column → 32 levels; hybrid log 100 Hz–8 kHz"),
+        ("FFT", "dsps_fft2r_fc32 + bit reversal, N = 1024 (same in both modes)"),
+        ("magnitude → dBFS", "512 bins × 39.1 Hz; 0 dB = full-scale sine"),
+        ("band_map_apply()", "loudest bin per column → 32 levels; LOG or LINEAR, 100 Hz–8 kHz"),
         ("tone_find()", "peak bin + parabolic interpolation → frequency and column"),
         ("status + send", "above-range check · xQueueOverwrite · FRAME/TONE to serial"),
     ]
     disp = [
         ("xQueueReceive(…, 0)", "take the newest frame; none for 500 ms → blank"),
-        ("choose view", "staircase after a rotate · not listening → blank · else bars"),
+        ("choose view", "staircase for 1.5 s at power-up · not listening → blank · else bars"),
         ("bar_model_update()", "−46 dB floor, 3 dB/row: jumps up at once, falls 20 rows/s"),
         ("draw", "frame_draw_bar() for each of the 32 columns"),
-        ("orientation", "k = 0..15 from NVS, changed by a long press on LISTEN"),
+        ("orientation", "fixed APP_ORIENT_* flags in app_config.h (bring-up 01 probe)"),
         ("frame_to_device_rows()", "apply the module's orientation flags"),
         ("max7219_write_all()", "4 chips × 8 rows over SPI; control registers re-sent every 1 s"),
     ]
@@ -391,7 +390,7 @@ def fw_low():
                            "sig" if x < 500 else "ink"))
         return top + (len(steps) - 1) * (h + gap)
 
-    last_a = column(24, 464, audio, acc_idx=(5, 7))
+    last_a = column(24, 464, audio, acc_idx=(4, 6))
     column(536, 440, disp)
     # queue connector: audio last -> display first
     ya = last_a + h / 2
@@ -403,9 +402,9 @@ def fw_low():
     b.append(T(550, yq + 41, "32 column levels · tone Hz + column · status bits · timestamp", "ts"))
     b.append(T(550, yq + 58, "If the display is late it skips old frames instead of lagging.", "ts"))
     b.append(T(550, yq + 75, "Shared between the two cores without locks.", "ts"))
-    ym = top + 10 * (h + gap) + 12
+    ym = top + 9 * (h + gap) + 12
     b.append(T(24, ym, "Modes (MODE button)", "tb2"))
-    b.append(T(24, ym + 20, "FULL: hybrid log 100 Hz–8 kHz  ·  BASS/VOICE: decimated, 50 Hz–2.5 kHz  ·  LINEAR: baseline for comparison  (tone-finder hidden for now)", "ts"))
+    b.append(T(24, ym + 20, "LOG: hybrid-log columns  ·  LINEAR: equal-width columns  ·  both 100 Hz–8 kHz, same FFT: a press changes only the column map", "ts"))
     return svg(1000, ym + 40, "Spectrum visualiser · firmware detail (one frame)", "".join(b))
 
 # ---------------------------------------------------------------- 1b. LM358 preamp schematics
@@ -664,7 +663,7 @@ def fw_flow():
     b.append(L(M, 310, M, 338, "w w-ink2", "ink")); b.append(dot(M, 326))
     fc_dec(b, M, 366, 160, 56, ["Mode", "changed?"])
     b.append(L(M + 80, 366, S - 52, 366, "w w-ink2", "ink")); b.append(T(M + 90, 359, "Yes", "lbl"))
-    fc_proc(b, S, 346, 104, 40, ["Set FFT size", "+ column map"])
+    fc_proc(b, S, 346, 104, 40, ["Rebuild the", "column map"])
     b.append(A(f"M{S} 386V414H{M+6}")); b.append(L(M, 394, M, 414, "w w-ink2")); b.append(T(M + 6, 408, "No", "lbl"))
     b.append(dot(M, 414)); b.append(L(M, 414, M, 426, "w w-ink2", "ink"))
     fc_dec(b, M, 454, 160, 56, ["Listening?"])
@@ -690,7 +689,7 @@ def fw_flow():
     M, S = 720, 902
     fc_proc(b, M, 270, 230, 40, ["Start SPI2 + 4 × MAX7219", "1 MHz, brightness from NVS"])
     b.append(L(M, 310, M, 346, "w w-ink2", "ink")); b.append(dot(M, 326))
-    fc_proc(b, M, 346, 230, 48, ["Wait for the 25 ms tick", "apply new brightness / rotation"])
+    fc_proc(b, M, 346, 230, 48, ["Wait for the 25 ms tick", "apply new brightness"])
     b.append(L(M, 394, M, 412, "w w-ink2", "ink"))
     fc_dec(b, M, 440, 160, 56, ["New frame", "in queue?"])
     b.append(L(M + 80, 440, S - 52, 440, "w w-ink2", "ink")); b.append(T(M + 90, 433, "No", "lbl"))
@@ -699,7 +698,7 @@ def fw_flow():
     b.append(dot(M, 494)); b.append(L(M, 494, M, 514, "w w-ink2", "ink"))
     fc_proc(b, M, 514, 230, 48, ["Bar rows = (dB − floor) ÷ 3 dB", "jump up at once, fall 20 rows/s"])
     b.append(L(M, 562, M, 582, "w w-ink2", "ink"))
-    fc_proc(b, M, 582, 230, 40, ["Draw 32 bars", "then apply the rotation"])
+    fc_proc(b, M, 582, 230, 40, ["Draw 32 bars", "then apply the fixed orientation"])
     b.append(L(M, 622, M, 642, "w w-ink2", "ink"))
     fc_io(b, M, 642, 230, 40, ["Send 8 rows × 4 chips", "over SPI"])
     b.append(A(f"M{M} 682V700H966V326H{M+6}"))
@@ -716,10 +715,10 @@ def fw_flow():
     fc_dec(b, 470, cy, 120, 60, ["Pressed?"])
     b.append(L(530, cy, 560, cy, "w w-ink2", "ink")); b.append(T(536, cy - 7, "Yes", "lbl"))
     b.append(R(560, cy - 52, 240, 104, "bx", 4))
-    acts = [("MODE short", "next mode"), ("MODE long", "next brightness"),
-            ("LISTEN short", "stop / start"), ("LISTEN long", "rotate display")]
+    acts = [("MODE short", "LOG ↔ LINEAR"), ("MODE long", "next brightness"),
+            ("LISTEN short", "stop / start")]
     for i, (k, v) in enumerate(acts):
-        yy = cy - 28 + i * 20
+        yy = cy - 18 + i * 20   # 3 rows, centred in the box
         b.append(T(574, yy, k, "tm")); b.append(T(676, yy, "→ " + v, "ts"))
     b.append(L(800, cy, 822, cy, "w w-ink2", "ink"))
     fc_proc(b, 890, cy - 22, 136, 44, ["Save to NVS", "kept after power-off"])
@@ -729,7 +728,7 @@ def fw_flow():
     b.append(P(f"M610 {cy-52}V786H250V776", "w w-ink2 dash", "ink"))
     b.append(T(618, 820, "mode, listening", "ts"))
     b.append(P(f"M760 {cy-52}V716", "w w-ink2 dash", "ink"))
-    b.append(T(768, 760, "brightness, rotation", "ts"))
+    b.append(T(768, 760, "brightness", "ts"))
     # legend
     ly = 1000
     b.append(T(24, ly, "Shapes:", "tb2"))

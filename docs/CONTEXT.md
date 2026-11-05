@@ -49,13 +49,14 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - [x] Repo skeleton: headers, CMake files, empty `.c` stubs, bring-up projects, host-test stubs (29/10). Claude built it with ESP-IDF v6.0.3: main project + both bring-ups compile with no warnings; `host_tests` make passes. (esp-dsp was taken from GitHub for that check because the component registry was blocked there — Joe's first build will download it from the registry and create `dependencies.lock`; commit that file.)
 - [x] Push to GitHub
 - [x] Bring-up 01 code: `max7219` driver, all of `frame_gfx` (+ host tests), bring-up program (29/10). Builds clean.
-- [ ] Bring-up 01 on hardware (optional now: orientation can be set with LISTEN long press on the main firmware)
+- [x] Bring-up 01 probe on hardware (05/11): orientation R1 FX0 FY1 T0, fixed in `app_config.h`. Soak at the new flags still to do
 - [x] Bring-up 02 code: `adc_sampler` + rate sweep / raw stream (29/10, `81c16af`). Builds clean.
 - [ ] Bring-up 02 on hardware: rate sweep, raw logs at each gain
 - [x] Pure components + laptop tests: `band_map`, `bar_model`, `tone_finder` (29/10, `fdee253`)
 - [x] `spectrum` (esp-dsp): DC removal, decimation filter, Hann, dBFS (29/10, `f92bcea`). Not testable off-board.
 - [x] Main app: plumbing (`a8ac360`), audio_task (`517849f`), display_task (`a143fb9`), input_task + main — full firmware builds (29/10)
 - [x] Python tools for evidence (`tools/`, checked on synthetic logs) (29/10)
+- [x] Display simplified (05/11, spec `docs/specs/2026-11-05_display_simplify.md`): two modes LOG/LINEAR, fixed orientation, bars only
 - [ ] Core features → flagship → test plan → demo
 
 ## Open questions
@@ -78,3 +79,4 @@ Kept by Claude so any new chat or Claude Code session can pick up where we left 
 - **5 Nov:** Preamp changed to an LM358 (NPN stage too weak). New schematics `docs/diagrams/preamp-1.png` (×101) and `preamp-2.png` (×1100), each with DC check values and chip pins; system wiring, hardware diagrams and bringup/README parts table updated. Added a software flowchart (`fw-flow.png`); fw-detail updated to the plain-bars display. Joe is rebuilding the preamp neatly to rule out wiring faults. Next: DC check (pin 1 ≈ 0.95 V), new quiet-room log → re-set `APP_FLOOR_DB`, confirm orientation k for the default.
 - **5 Nov (later):** LM358 preamp works and responds to sound. The display is still confusing: 16 orientations on LISTEN, a wrong one saved in NVS, and the bass/linear modes look random. Wrote `docs/specs/2026-11-05_display_simplify.md` for Claude Code: two modes (LOG and LINEAR, MODE short press; brightness on long press), orientation found with a raw-register probe and fixed at compile time, LISTEN = stop/start, NVS mode + brightness. Next: Claude Code does T1 (probe), Joe runs it, then T2–T8.
 - **5 Nov (T1 done):** Bring-up 01 step 3 is now a 4-LED raw-register probe (P1 origin dev0/reg0/bit0, P2 +bit7, P3 +reg7, P4 +dev1; 5 s each, 3 rounds, then the soak). Answer → flags table and sanity checks in `bringup/README.md`; new host test checks the table against `frame_to_device_rows()` for all 16 flag sets. Next: Joe runs the probe and reports the four answers → T2; meanwhile T3–T6.
+- **5 Nov (T2–T7 done):** Probe answers (wire end = right): O top-right of the rightmost module, P2 left of O, P3 below O, P4 next module left → `REVERSE_DEVICES` 1, `FLIP_X` 0, `FLIP_Y` 1, `TRANSPOSE` 0 (fixed in `app_config.h`, no button/NVS). Firmware now has two modes, LOG (0) and LINEAR (3), same FFT and range; MODE short toggles, MODE long = brightness, LISTEN short = stop/start, LISTEN long = nothing. NVS namespace `sv2` (mode + brightness). Bars only; bass/voice + tone-finder display removed from `main/`. 1.5 s boot staircase. PLAN decision log, LAB_TESTS, README, CLAUDE.md and diagrams (fw-flow, fw-detail, circuit) updated. Found: the 30/10 quiet-room log that set `APP_FLOOR_DB` was in bass/voice mode with the old NPN preamp, so B1 must be redone. Next: Joe flashes the main firmware, checks the boot staircase and buttons, then B1 quiet-room log → `APP_FLOOR_DB`, then the LOG vs LINEAR logs/video.

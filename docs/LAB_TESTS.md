@@ -24,9 +24,9 @@ Wiring: VCC → 5V, GND → GND, DIN → 11, CS → 10, CLK → 12.
 
 - [ ] STEP 1 photo: all LEDs on → `photos/..._01_testmode.jpg`
 - [ ] STEP 2 photos A, B, C (single LEDs) → which chip is chip 0, which corner
-- [ ] STEP 3: number `k` of the clean staircase (rises bottom-left → top-right)
-  → **sets** `APP_ORIENT_REVERSE_DEVICES / FLIP_X / FLIP_Y / TRANSPOSE` (copy the four flags from the `ORIENT k` line)
-- [ ] Reflash with the flags set (it runs steps 1–3 again first, ~80 s, then STEP 4), soak 5 min: any random pixels? note `write_avg` / `write_max`. The bring-up does **not** re-send control registers, so any glitch stays visible here (the main firmware re-sends them every second)
+- [x] STEP 3 probe (05/11, `2026-11-05_A1_probe.txt`, photos `2026-11-05_A1_Probe_P3/P4.jpeg`): P2 left of O, P3 below O, O in the rightmost module, P4 next left
+  → **set** `APP_ORIENT_REVERSE_DEVICES` 1 / `FLIP_X` 0 / `FLIP_Y` 1 / `TRANSPOSE` 0 (table in `bringup/README.md`)
+- [ ] Reflash with the flags set (it runs steps 1–3 again first, ~75 s, then STEP 4), soak 5 min: staircase rises bottom-left → top-right?: any random pixels? note `write_avg` / `write_max`. The bring-up does **not** re-send control registers, so any glitch stays visible here (the main firmware re-sends them every second)
   → evidence for the 3.3 V-logic risk; `write_avg` goes in the latency budget
 - [ ] Optional: soak again at `APP_MAX7219_CLOCK_HZ` = 4 MHz and 10 MHz → **sets** the clock (fastest clean one, or stay at 1 MHz)
 
@@ -56,16 +56,16 @@ Wiring: electret capsule + LM358 preamp, op-amp output → 4.7 kΩ → GPIO 1 �
 
 ## Session B — main firmware (code ready; needs A1 orientation + A2 rate values set first)
 
-Wiring = A1 + A2 together. Buttons optional at first (to GND): MODE → GPIO 14, LISTEN → GPIO 21. Without buttons the firmware starts in full mode.
+Wiring = A1 + A2 together. Buttons optional at first (to GND): MODE → GPIO 14, LISTEN → GPIO 21. Without buttons the firmware starts in LOG mode.
 At boot the log prints a `config:` line with the settings used — keep it in every evidence log.
-Modes (MODE short press): 0 full → 1 bass/voice → 3 linear (tone-finder digits hidden since 30/10: `APP_SHOW_TONE_MODE`; TONE lines are still logged for the accuracy tests). The display shows plain bars only — status pixels and peak dots are off (`APP_SHOW_*` in `app_config.h`). MODE long press = brightness. LISTEN short = stop/start, **LISTEN long = next display orientation** (0–15, saved). At power-up the display shows a test staircase for 1.5 s: it must rise from bottom-left to top-right. If not, hold LISTEN until it does (each step shows the staircase for 2.5 s and logs `ORIENT k`).
+Two modes since 05/11, both 32 bars over 100 Hz – 8 kHz with the same FFT: **LOG** (hybrid-log columns, mode 0 in FRAME lines) and **LINEAR** (equal-width columns, mode 3). MODE short press toggles them (saved, logged as `MODE short: mode -> LOG/LINEAR`); MODE long press = next brightness (0, 2, 5, 9, 15, saved). LISTEN short = stop/start (display blanks while stopped); LISTEN long does nothing. The display shows plain bars only; TONE lines and status bits are still logged for the accuracy tests. The orientation is fixed in `APP_ORIENT_*` (A1 probe): at power-up the display shows a staircase for 1.5 s, which must rise from bottom-left to top-right, and logs `ORIENT fixed: R=.. FX=.. FY=.. T=..`. If it doesn't, re-run the A1 probe; no button changes the orientation.
 
 ```bash
 idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test>.txt
 ```
 
 ### B1. Noise floor — quiet room
-- [ ] Mic connected, room quiet, full mode, 30 s log
+- [ ] Mic connected, room quiet, LOG mode, 30 s log (the 30/10 log was taken in bass/voice mode, so redo it for the LM358 preamp: `2026-11-05_B1_quiet_lm358.txt`)
   → `python tools/frames.py LOG` prints a suggested `APP_FLOOR_DB` (loudest column's 95th percentile + 1 dB) → **sets** `APP_FLOOR_DB`; set `APP_TONE_MIN_DB` ~10 dB above it
 - [ ] Check R5: ≤ 1 lit pixel per column in silence (photo)
 
@@ -84,19 +84,18 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 - [ ] Tone-finder accuracy: 100, 200, 440, 1000, 2000, 5000, 7500 Hz — one log per tone (`capture.sh B3_tone440` …), then `tools/tone_stats.py LOG --set-hz F --path electrical --csv docs/evidence/accuracy.csv` per log, then `tools/plot_accuracy.py docs/evidence/accuracy.csv`
 - [ ] Frequency response (R1): 50 Hz → 20 kHz in steps, same amplitude — peak column level vs frequency
 - [ ] Leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 — how many neighbouring columns light
-- [ ] Two-tone resolution (if the generator has two channels, or generator + phone): full vs bass/voice mode
+- [ ] Two-tone resolution (if the generator has two channels, or generator + phone): LOG mode, bin width 39 Hz (bass/voice mode removed 05/11)
 - [ ] Aliasing (R6): 25 kHz and 30 kHz tones — where do they show up? With and without the 2.2nF cap
 
 ### B4. Acoustic path (phone tone app → speaker → mic)
 - [ ] Same tone list as B3, phone at fixed distance (note it) — `tone_stats.py … --path acoustic` into the same CSV, so the plot compares both paths
 - [ ] Loudness (R7): 1 kHz, phone volume in steps — bar height vs volume. No AGC now, so this should be close to linear in dB until the preamp clips; may set `APP_DB_PER_ROW`
 - [ ] Latency (R3): slow-mo phone video of a clap next to the display → frames from clap to LEDs
-- [ ] Music + speech demo videos: full mode vs linear mode (same song) — the linear vs hybrid comparison
+- [ ] Music + speech demo videos: LOG vs LINEAR (same song or sweep, logs `2026-11-05_R_log.txt` / `_R_linear.txt`; one video pressing MODE mid-sound) — in LINEAR speech crowds into the left few columns, in LOG it spreads across the strip
 
 ### B5. Buttons and modes
-- [ ] Every mode via MODE button; long press changes brightness; LISTEN short stops/starts; LISTEN long steps orientation (note the `ORIENT k` that's correct and copy its flags into `APP_ORIENT_*` so it's the default)
-- [ ] Status pixels (top row, right): col 31 = silent, 30 = clipping, 29 = above range, 28 = not listening — trigger each (quiet room / loud clap / 12 kHz tone / LISTEN button), photo each
-- [ ] Tone-finder mode: digits readable? marker pixel under the right column?
+- [ ] MODE short toggles LOG ↔ LINEAR; MODE long changes brightness; LISTEN short stops/starts (blank display); LISTEN long does nothing — each logged
+- [ ] Boot staircase rises bottom-left → top-right after every power-up and reflash, no button presses
 - [ ] Power-cycle: mode and brightness survive (R8); always comes back listening
 - [ ] Optional: USB power meter, brightness 0 vs 15 (sustainability point)
 
@@ -106,12 +105,12 @@ Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series wi
 
 | Value | Placeholder | Set by test |
 | --- | --- | --- |
-| `APP_ORIENT_*` | transpose only (best guess from 30/10 photos) | A1, or LISTEN long-press on the main firmware |
+| `APP_ORIENT_*` | **set 05/11**: R1 FX0 FY1 T0 | A1 probe (bring-up 01 STEP 3) |
 | `APP_MAX7219_CLOCK_HZ` | 1 MHz | A1 (optional) |
 | `APP_SAMPLE_RATE_ACTUAL_HZ` | 40 000 | A2 |
 | Preamp: one or two stages, RB value | 1 stage, 470 kΩ | A2 |
 | `APP_SILENCE_RMS` | 8 | A2 / B1 |
 | `APP_CLIP_MARGIN` | 16 | A2 |
-| `APP_FLOOR_DB` | −46 (from 30/10 B1 log, interference columns excluded) | B1 |
+| `APP_FLOOR_DB` | −46 (from 30/10 B1 log: old NPN preamp, bass/voice mode; redo with the LM358) | B1 |
 | `APP_TONE_MIN_DB` | −36 (floor + 10 dB) | B1 |
 | `APP_FALL_ROWS_PER_S`, `APP_PEAK_*` | 20 / 0.5 s / 6 | B4 videos (tune by eye, note before/after) |
