@@ -29,11 +29,12 @@ static const char *TAG = "main";
 void app_main(void)
 {
     /* Settings in every log, so each evidence file says how it was made */
-    ESP_LOGI(TAG, "config: rate req %d / actual %d Hz, N %d (bass %d, decim %d), window %d, "
-             "full %.0f-%.0f Hz, floor %.1f dB, %.1f dB/row, SPI %d Hz",
-             APP_SAMPLE_RATE_HZ, APP_SAMPLE_RATE_ACTUAL_HZ, APP_FFT_N, APP_FFT_N_BASS, APP_DECIMATE_BASS,
+    ESP_LOGI(TAG, "config: rate req %d / actual %d Hz, N %d, window %d, "
+             "range %.0f-%.0f Hz, floor %.1f dB, %.1f dB/row, SPI %d Hz, orient R%d FX%d FY%d T%d",
+             APP_SAMPLE_RATE_HZ, APP_SAMPLE_RATE_ACTUAL_HZ, APP_FFT_N,
              APP_USE_WINDOW, APP_FULL_F_MIN_HZ, APP_FULL_F_MAX_HZ, APP_FLOOR_DB, APP_DB_PER_ROW,
-             APP_MAX7219_CLOCK_HZ);
+             APP_MAX7219_CLOCK_HZ, APP_ORIENT_REVERSE_DEVICES, APP_ORIENT_FLIP_X,
+             APP_ORIENT_FLIP_Y, APP_ORIENT_TRANSPOSE);
 
     ESP_ERROR_CHECK(settings_init());
     settings_t s;
@@ -44,8 +45,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(display_task_start(frames));
     display_task_set_brightness(s.brightness);
-    display_task_set_orientation(s.orient);
     ESP_ERROR_CHECK(audio_task_start(frames, s.mode));
     ESP_ERROR_CHECK(input_task_start(&s));
-    ESP_LOGI(TAG, "running: mode %d, brightness %u, orientation %u", s.mode, s.brightness, s.orient);
+    ESP_LOGI(TAG, "running: mode %s, brightness %u", app_mode_name(s.mode), s.brightness);
 }

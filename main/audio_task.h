@@ -19,7 +19,8 @@
 /** Create the task. @p frames_out is a 1-slot queue of audio_frame_t. */
 esp_err_t audio_task_start(QueueHandle_t frames_out, app_mode_t initial_mode);
 
-/** Change mode; the task rebuilds spectrum/band_map before the next frame. */
+/** Change mode (APP_MODE_LOG / APP_MODE_LINEAR); the task rebuilds the column
+ *  map before the next frame and logs the new column edges. Other values are ignored. */
 void audio_task_set_mode(app_mode_t mode);
 
 /** false = stop the ADC (no audio captured at all), true = listen again. */

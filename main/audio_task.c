@@ -7,6 +7,9 @@
  *
  * Frames are back to back (no overlap): at 40 kHz and N = 1024 one frame is
  * 25.6 ms of audio, so ~39 analysed frames per second (R4 needs >= 20).
+ *
+ * Two modes (05/11), LOG and LINEAR: the FFT is set up once and a mode change
+ * only rebuilds the column map, so the two can't differ in anything else.
  */
 #include <math.h>
 #include <stdatomic.h>
@@ -25,74 +28,55 @@
 
 static const char *TAG = "audio";
 
-#define MAX_INPUT_LEN  2048   /* max of APP_FFT_N * 1 and APP_FFT_N_BASS * APP_DECIMATE_BASS */
+#define MAX_INPUT_LEN  (APP_FFT_N * APP_DECIMATE_FULL)
 #define MAX_BINS       (APP_FFT_N / 2)
 
-_Static_assert(APP_FFT_N * APP_DECIMATE_FULL <= MAX_INPUT_LEN, "raise MAX_INPUT_LEN");
-_Static_assert(APP_FFT_N_BASS * APP_DECIMATE_BASS <= MAX_INPUT_LEN, "raise MAX_INPUT_LEN");
-_Static_assert(APP_FFT_N_BASS <= APP_FFT_N, "MAX_BINS assumes the full-mode FFT is the biggest");
-
 static QueueHandle_t s_out;
-static atomic_int s_req_mode;
+static atomic_int s_req_mode = APP_MODE_LOG;
 static atomic_bool s_req_listening = true;
 
 /* Owned by the task */
-static app_mode_t s_mode = APP_MODE_COUNT;   /* nothing configured yet */
+static app_mode_t s_mode;
+static bool s_configured;   /* false until the first column map is built */
 static band_map_t s_map;
 static int s_tone_min_bin;
 static uint16_t s_raw[MAX_INPUT_LEN];
 static float s_bins[MAX_BINS];
 
-typedef struct {
-    size_t fft_n;
-    int decimate;
-    band_map_mode_t map_mode;
-    float f_min, f_max;
-} mode_setup_t;
-
-static mode_setup_t setup_for(app_mode_t m)
+/* Once at start-up: the FFT is the same in both modes. */
+static void spectrum_setup(void)
 {
-    switch (m) {
-    case APP_MODE_BASS_VOICE:
-        return (mode_setup_t){APP_FFT_N_BASS, APP_DECIMATE_BASS, BAND_MAP_HYBRID_LOG, APP_BASS_F_MIN_HZ, APP_BASS_F_MAX_HZ};
-    case APP_MODE_LINEAR:
-        return (mode_setup_t){APP_FFT_N, APP_DECIMATE_FULL, BAND_MAP_LINEAR, APP_LINEAR_F_MIN_HZ, APP_LINEAR_F_MAX_HZ};
-    case APP_MODE_FULL:
-    case APP_MODE_TONE_FINDER:
-    default:
-        return (mode_setup_t){APP_FFT_N, APP_DECIMATE_FULL, BAND_MAP_HYBRID_LOG, APP_FULL_F_MIN_HZ, APP_FULL_F_MAX_HZ};
-    }
-}
-
-static esp_err_t configure(app_mode_t m)
-{
-    mode_setup_t su = setup_for(m);
     spectrum_cfg_t scfg = {
-        .fft_n = su.fft_n,
+        .fft_n = APP_FFT_N,
         .sample_rate_hz = APP_SAMPLE_RATE_ACTUAL_HZ,
-        .decimate = su.decimate,
+        .decimate = APP_DECIMATE_FULL,
         .use_window = APP_USE_WINDOW,
     };
-    esp_err_t err = spectrum_init(&scfg);
-    if (err != ESP_OK) return err;
+    ESP_ERROR_CHECK(spectrum_init(&scfg));
+    s_tone_min_bin = (int)ceilf(APP_TONE_F_MIN_HZ / spectrum_bin_hz());
+    ESP_LOGI(TAG, "spectrum: %u-pt FFT, decimate %d, %.2f Hz bins",
+             (unsigned)APP_FFT_N, APP_DECIMATE_FULL, spectrum_bin_hz());
+}
 
+/* On every mode change: only the column map differs between LOG and LINEAR. */
+static esp_err_t configure(app_mode_t m)
+{
     band_map_cfg_t mcfg = {
-        .mode = su.map_mode,
+        .mode = m == APP_MODE_LINEAR ? BAND_MAP_LINEAR : BAND_MAP_HYBRID_LOG,
         .cols = APP_DISPLAY_COLS,
-        .f_min_hz = su.f_min,
-        .f_max_hz = su.f_max,
+        .f_min_hz = APP_FULL_F_MIN_HZ,
+        .f_max_hz = APP_FULL_F_MAX_HZ,
         .bin_hz = spectrum_bin_hz(),
         .n_bins = (int)spectrum_n_bins(),
     };
     if (band_map_build(&s_map, &mcfg) != 0) {
-        ESP_LOGE(TAG, "band_map_build failed for mode %d (range vs bins/Nyquist?)", m);
+        ESP_LOGE(TAG, "band_map_build failed for mode %s (range vs bins/Nyquist?)", app_mode_name(m));
         return ESP_ERR_INVALID_ARG;
     }
-    s_tone_min_bin = (int)ceilf(APP_TONE_F_MIN_HZ / spectrum_bin_hz());
     s_mode = m;
-    ESP_LOGI(TAG, "mode %d: %u-pt FFT, decimate %d, %.2f Hz bins, %s %.0f-%.0f Hz",
-             m, (unsigned)su.fft_n, su.decimate, spectrum_bin_hz(),
-             su.map_mode == BAND_MAP_LINEAR ? "linear" : "hybrid log", su.f_min, su.f_max);
+    s_configured = true;
+    ESP_LOGI(TAG, "mode %d (%s): %s columns %.0f-%.0f Hz", m, app_mode_name(m),
+             m == APP_MODE_LINEAR ? "linear" : "hybrid log", APP_FULL_F_MIN_HZ, APP_FULL_F_MAX_HZ);
     /* Column edges with the real bin width: the lookup table for the column-accuracy test (R2) */
     char line[16 * BAND_MAP_MAX_COLS];
     int len = 0;
@@ -122,6 +106,7 @@ static void audio_task(void *arg)
 {
     adc_sampler_cfg_t acfg = { .gpio = APP_PIN_MIC, .sample_rate_hz = APP_SAMPLE_RATE_HZ, .frame_len = MAX_INPUT_LEN };
     ESP_ERROR_CHECK(adc_sampler_init(&acfg));
+    spectrum_setup();
 
     uint32_t seq = 0;
     bool listening = false;
@@ -130,10 +115,10 @@ static void audio_task(void *arg)
 
     for (;;) {
         app_mode_t want = (app_mode_t)atomic_load(&s_req_mode);
-        if (want != s_mode && configure(want) != ESP_OK) {
-            ESP_LOGE(TAG, "could not configure mode %d, falling back to full", want);
-            atomic_store(&s_req_mode, APP_MODE_FULL);
-            ESP_ERROR_CHECK(configure(APP_MODE_FULL));
+        if ((!s_configured || want != s_mode) && configure(want) != ESP_OK) {
+            ESP_LOGE(TAG, "could not configure mode %d, falling back to LOG", want);
+            atomic_store(&s_req_mode, APP_MODE_LOG);
+            ESP_ERROR_CHECK(configure(APP_MODE_LOG));
         }
 
         bool want_listen = atomic_load(&s_req_listening);
@@ -191,7 +176,7 @@ static void audio_task(void *arg)
 esp_err_t audio_task_start(QueueHandle_t frames_out, app_mode_t initial_mode)
 {
     s_out = frames_out;
-    atomic_store(&s_req_mode, initial_mode);
+    atomic_store(&s_req_mode, app_mode_valid(initial_mode) ? initial_mode : APP_MODE_LOG);
     BaseType_t ok = xTaskCreatePinnedToCore(audio_task, "audio", APP_AUDIO_TASK_STACK, NULL,
                                             APP_AUDIO_TASK_PRIO, NULL, APP_AUDIO_TASK_CORE);
     return ok == pdPASS ? ESP_OK : ESP_ERR_NO_MEM;
@@ -199,7 +184,7 @@ esp_err_t audio_task_start(QueueHandle_t frames_out, app_mode_t initial_mode)
 
 void audio_task_set_mode(app_mode_t mode)
 {
-    if (mode < APP_MODE_COUNT) atomic_store(&s_req_mode, mode);
+    if (app_mode_valid(mode)) atomic_store(&s_req_mode, mode);
 }
 
 void audio_task_set_listening(bool on)

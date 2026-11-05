@@ -12,7 +12,7 @@ import sys
 from dataclasses import dataclass, field
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
-MODES = {0: "full", 1: "bass/voice", 2: "tone finder", 3: "linear"}
+MODES = {0: "LOG", 3: "LINEAR", 1: "bass/voice (removed 05/11)", 2: "tone finder (removed 05/11)"}  # 0 was "full" before 05/11
 STATUS_BITS = {1: "silent", 2: "clipping", 4: "above range", 8: "not listening"}
 
 

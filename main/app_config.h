@@ -14,7 +14,7 @@
 #pragma once
 
 /* ---------------- Pins (confirm at bring-up) ---------------- */
-#define APP_PIN_MIC              1    /* NPN preamp collector -> GPIO1 = ADC1 channel 0 */
+#define APP_PIN_MIC              1    /* LM358 preamp output (via 4.7k/2.2n filter) -> GPIO1 = ADC1 channel 0 */
 #define APP_PIN_MAX7219_DIN      11
 #define APP_PIN_MAX7219_CLK      12
 #define APP_PIN_MAX7219_CS       10
@@ -28,39 +28,34 @@
 #define APP_DISPLAY_COLS         32
 #define APP_DISPLAY_ROWS         8
 #define APP_BRIGHTNESS_DEFAULT   2                   /* 0..15, low = less power */
-/* Orientation of the 4-in-1 module. These flags are only the DEFAULT: on the
- * board, a long press on LISTEN steps through all 16 orientations (same
- * numbering k as bring-up 01: bit0 reverse, bit1 flip X, bit2 flip Y,
- * bit3 transpose), shows a test staircase, and saves the choice in NVS.
- * Default = transpose only: the 30/10 photos showed bars running along the
- * strip with all flags false, so rows and columns are swapped on this module. */
-#define APP_ORIENT_REVERSE_DEVICES  false
-#define APP_ORIENT_FLIP_X           false
-#define APP_ORIENT_FLIP_Y           false
-#define APP_ORIENT_TRANSPOSE        true
-#define APP_ORIENT_DEFAULT_K        ((APP_ORIENT_REVERSE_DEVICES ? 1 : 0) | (APP_ORIENT_FLIP_X ? 2 : 0) | \
-                                     (APP_ORIENT_FLIP_Y ? 4 : 0) | (APP_ORIENT_TRANSPOSE ? 8 : 0))
-#define APP_STAIRCASE_BOOT_MS    0      /* test staircase at power-up (0 = off; orientation changes still show it) */
-#define APP_STAIRCASE_ORIENT_MS  2500   /* and after each orientation change */
+/* Orientation of the 4-in-1 module: fixed at compile time (05/11), not
+ * changeable from the buttons or NVS. Set from the bring-up 01 probe,
+ * evidence docs/evidence/logs/2026-11-05_A1_probe.txt and
+ * docs/evidence/photos/2026-11-05_A1_Probe_P3/P4.jpeg, strip horizontal with
+ * the wire end on the right (table in bringup/README.md): */
+#define APP_ORIENT_REVERSE_DEVICES  true    /* T1 probe 2026-11-05: O in the rightmost module, P4 in the next one left */
+#define APP_ORIENT_FLIP_X           false   /* T1 probe 2026-11-05: P2 left of O */
+#define APP_ORIENT_FLIP_Y           true    /* T1 probe 2026-11-05: P3 below O */
+#define APP_ORIENT_TRANSPOSE        false   /* T1 probe 2026-11-05: P2 in the same row as O */
+#define APP_STAIRCASE_BOOT_MS    1500   /* boot check: staircase rising bottom-left -> top-right, then live bars */
 
 /* ---------------- Sampling and FFT ---------------- */
 #define APP_SAMPLE_RATE_HZ       40000   /* requested; S3 allows 611..83333 (SOC_ADC_SAMPLE_FREQ_THRES_*) */
 #define APP_SAMPLE_RATE_ACTUAL_HZ 40000  /* MEASURE: RATE value from bring-up 02 — used for all Hz maths */
-#define APP_FFT_N                1024    /* full/tone/linear modes: bins = N/2; bin width = rate / N */
-#define APP_FFT_N_BASS           512     /* bass/voice mode, after decimation: 2048 raw samples = 51 ms */
+#define APP_FFT_N                1024    /* both modes: bins = N/2; bin width = rate / N */
 #define APP_DECIMATE_FULL        1
-#define APP_DECIMATE_BASS        4       /* bass/voice mode: 10 kHz effective */
+/* Bass/voice mode constants: not used since 05/11 (two modes only, same FFT). */
+#define APP_FFT_N_BASS           512     /* not used since 05/11 */
+#define APP_DECIMATE_BASS        4       /* not used since 05/11 */
 #define APP_USE_WINDOW           1       /* Hann on (leakage test: set 0, reflash, compare) */
 
 /* ---------------- Column mapping ---------------- */
+/* LOG and LINEAR both use this range and the same FFT, so a MODE press
+ * changes only the column map (one variable at a time). */
 #define APP_FULL_F_MIN_HZ        100.0f
 #define APP_FULL_F_MAX_HZ        8000.0f
-#define APP_BASS_F_MIN_HZ        50.0f
-#define APP_BASS_F_MAX_HZ        2500.0f
-/* Linear baseline uses the full-mode range and FFT size, so a linear vs hybrid
- * comparison changes only the mapping (one variable at a time). */
-#define APP_LINEAR_F_MIN_HZ      APP_FULL_F_MIN_HZ
-#define APP_LINEAR_F_MAX_HZ      APP_FULL_F_MAX_HZ
+#define APP_BASS_F_MIN_HZ        50.0f     /* not used since 05/11 */
+#define APP_BASS_F_MAX_HZ        2500.0f   /* not used since 05/11 */
 
 /* ---------------- Levels (MEASURE) ---------------- */
 #define APP_FLOOR_DB             (-46.0f)   /* 2026-10-30_B1_quiet_room: typical column p95 -49 dB, +3 dB.
@@ -75,7 +70,6 @@
 #define APP_CLIP_MARGIN          16         /* raw within this of 0 or 4095 = clipping */
 #define APP_TONE_MIN_DB          (-36.0f)   /* floor + 10 dB: below this the tone finder shows "---" */
 #define APP_TONE_F_MIN_HZ        50.0f      /* tone-finder ignores bins below this (DC, rumble) */
-#define APP_TONE_DISPLAY_MS      250        /* digits update 4x/s so they're readable */
 /* "Above range" pixel: strongest peak above the displayed range is louder than
  * APP_TONE_MIN_DB and within this many dB of the strongest in-range column. */
 #define APP_ABOVE_RANGE_MARGIN_DB 6.0f
@@ -99,17 +93,12 @@
 /* ---------------- Buttons / settings ---------------- */
 #define APP_BTN_DEBOUNCE_MS      30
 #define APP_BTN_LONG_MS          800
-#define APP_MODE_DEFAULT         APP_MODE_FULL   /* used until a mode is saved */
+#define APP_MODE_DEFAULT         APP_MODE_LOG    /* used until a mode is saved */
 /* Long press on MODE steps through these brightness levels */
 #define APP_BRIGHTNESS_STEPS     {0, 2, 5, 9, 15}
 
-/* ---------------- What the display draws ----------------
- * Plain spectrum bars by default (Joe, 30/10: "leave the fancy stuff").
- * The extras are still computed and logged over serial (TONE lines, status
- * bits in FRAME lines), so tests and tools keep working; set to 1 to show. */
-#define APP_SHOW_TONE_MODE       0   /* tone-finder digits as a MODE-button mode */
-#define APP_SHOW_STATUS_PIXELS   0   /* top-right silent/clip/above-range/not-listening pixels */
-#define APP_SHOW_PEAK_DOTS       0   /* falling dot above each bar */
+/* Display: plain spectrum bars only (05/11). No peak dots, status pixels or
+ * tone digits on the LEDs; tone and status are still logged over serial. */
 
 /* ---------------- Debug ---------------- */
 #define APP_DEBUG_STREAM_DEFAULT 1          /* print FRAME/TONE lines over serial */

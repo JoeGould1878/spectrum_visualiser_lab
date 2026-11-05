@@ -6,12 +6,11 @@
  *   reviewed and tested on hardware by Joe Gould
  *
  * Owns both buttons. Changes are passed on through audio_task_set_mode(),
- * audio_task_set_listening(), display_task_set_brightness() and
- * display_task_set_orientation(); mode, brightness and orientation are saved
- * to NVS only when they change.
+ * audio_task_set_listening() and display_task_set_brightness(); mode and
+ * brightness are saved to NVS only when they change. Every action is logged.
  *
- *   MODE   short: next mode        long: next brightness
- *   LISTEN short: stop/start       long: next display orientation (k 0..15)
+ *   MODE   short: LOG <-> LINEAR   long: next brightness
+ *   LISTEN short: stop/start       long: nothing (orientation is fixed since 05/11)
  */
 #include "input_task.h"
 #include "app_config.h"
@@ -57,18 +56,16 @@ static void input_task(void *arg)
 
         switch (button_poll(&s_btn_mode, now_ms)) {
         case BUTTON_EVT_SHORT:
-            s_settings.mode = (app_mode_t)((s_settings.mode + 1) % APP_MODE_COUNT);
-            if (!APP_SHOW_TONE_MODE && s_settings.mode == APP_MODE_TONE_FINDER)
-                s_settings.mode = (app_mode_t)((s_settings.mode + 1) % APP_MODE_COUNT);
+            s_settings.mode = app_mode_next(s_settings.mode);
             audio_task_set_mode(s_settings.mode);
             save();
-            ESP_LOGI(TAG, "mode -> %d", s_settings.mode);
+            ESP_LOGI(TAG, "MODE short: mode -> %s", app_mode_name(s_settings.mode));
             break;
         case BUTTON_EVT_LONG:
             s_settings.brightness = next_brightness(s_settings.brightness);
             display_task_set_brightness(s_settings.brightness);
             save();
-            ESP_LOGI(TAG, "brightness -> %u", s_settings.brightness);
+            ESP_LOGI(TAG, "MODE long: brightness -> %u", s_settings.brightness);
             break;
         default:
             break;
@@ -78,13 +75,10 @@ static void input_task(void *arg)
         case BUTTON_EVT_SHORT:
             listening = !listening;
             audio_task_set_listening(listening);
-            ESP_LOGI(TAG, "listening -> %s", listening ? "ON" : "OFF");
+            ESP_LOGI(TAG, "LISTEN short: listening -> %s", listening ? "ON" : "OFF");
             break;
         case BUTTON_EVT_LONG:
-            s_settings.orient = (uint8_t)((s_settings.orient + 1) & 15u);
-            display_task_set_orientation(s_settings.orient);
-            save();
-            ESP_LOGI(TAG, "orientation -> %u", s_settings.orient);
+            ESP_LOGI(TAG, "LISTEN long: no action (orientation is fixed in app_config.h)");
             break;
         default:
             break;
