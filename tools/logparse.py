@@ -2,7 +2,8 @@
 
 Line formats are defined in main/debug_stream.h. Any other line (ESP_LOG
 output, boot messages) is ignored, so a raw `idf.py monitor | tee` capture
-can be passed straight in.
+can be passed straight in. If the log holds more than one boot, only the
+last run is kept.
 
 Implementation: Claude (Anthropic), to Joe Gould's design and interface;
   reviewed and tested by Joe Gould
@@ -38,6 +39,11 @@ def parse(path):
     with open(path, errors="replace") as fh:
         for line in fh:
             line = ANSI.sub("", line).strip()
+            if "2nd stage bootloader" in line:
+                # The board rebooted (idf.py monitor resets it on connect, so a few
+                # lines from the previous run often come first): keep the last run only.
+                log = Log()
+                continue
             if "config:" in line and not log.config:
                 log.config = line[line.index("config:"):]
             tag, _, rest = line.partition(",")
