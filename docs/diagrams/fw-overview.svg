@@ -29,6 +29,12 @@
 .w-p5{stroke:#b3261e;stroke-width:2}
 .w-gnd{stroke:#55606d}
 .dash{stroke-dasharray:6 4}
+.dec{fill:#fff7e0;stroke:#b98a12;stroke-width:1.4}
+.io{stroke:#0f7b6c;stroke-width:1.4}
+.fork{stroke:#3d4a59;stroke-width:5}
+.rule{stroke:#9aa7b5;stroke-width:0.8}
+.lbl{fill:#1f6f8b;font:600 11.5px 'IBM Plex Sans','DejaVu Sans',Arial,sans-serif}
+.pinno{fill:#1f6f8b;font:600 11px 'IBM Plex Mono','DejaVu Sans Mono',Consolas,monospace}
 .dot{fill:#3d4a59}
 .mk{fill:#3d4a59}
 .mk-sig{fill:#0f7b6c}

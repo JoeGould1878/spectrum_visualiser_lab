@@ -52,31 +52,35 @@ Record:
 
 ## 02 — Mic preamp → ADC (`02_mic_adc/`)
 
-Needs: `components/adc_sampler` written first. Schematic: `docs/diagrams/circuit.png` (top-left box).
+Needs: `components/adc_sampler` written first. Schematics: `docs/diagrams/preamp-1.png` (one stage, build this first) and `preamp-2.png` (two stages). Each sheet has the DC readings to check and the chip pins.
 
-The MAX9814 never arrived, so the mic is a bare electret capsule with a one-NPN preamp (common emitter, collector feedback):
+The MAX9814 never arrived, so the mic is a bare electret capsule. The first one-NPN preamp gave too little response; it is now an **LM358** (dual op-amp) on the filtered 3.3 V rail, as non-inverting stages:
 
 | Part | Value | Connects |
 | --- | --- | --- |
-| R0 | 220 Ω | 3V3 → filtered rail (with C0) |
+| R0 | 220 Ω | board 3V3 → filtered rail (with C0) |
 | C0 | 100 µF electrolytic | filtered rail → GND (+ to the rail) |
 | R1 | 2.2 kΩ | filtered rail → capsule + (powers the capsule) |
 | Capsule | electret | + to R1/C1, − (pin tied to the metal case) to GND |
-| C1 | 1 µF | capsule + → Q1 base |
-| Q1 | NPN, BC547 / 2N3904 | emitter → GND; **check the pinout for your part** |
-| RB | 470 kΩ | Q1 collector → Q1 base (sets the bias) |
-| RC | 4.7 kΩ | filtered rail → Q1 collector |
-| C2 | 2.2 nF | Q1 collector → GND (anti-aliasing with RC, ≈ 15 kHz) |
-| Output | — | Q1 collector → GPIO 1 |
+| C1 | 1 µF | capsule + → pin 3 (+ side to the mic if electrolytic) |
+| Bias | 220 kΩ + 100 kΩ | rail → pin 3 → GND: holds the input at ≈ 0.95 V |
+| LM358 supply | pin 8 / pin 4 | filtered rail / GND, 100 nF straight across 8–4 |
+| Rf | 100 kΩ | pin 1 → pin 2 |
+| Gain leg | 1 kΩ then 10 µF | pin 2 → GND (10 µF + to the 1 kΩ): AC gain ×101, DC gain 1 |
+| Output filter | 4.7 kΩ, 2.2 nF | pin 1 → 4.7 kΩ → GPIO 1; 2.2 nF GPIO 1 → GND (≈ 15 kHz) |
+| Half B (one stage) | — | pin 7 → pin 6, pin 5 → GND |
+| Half B (two stages) | C3 1 µF, 220 k/100 k, Rf 10 kΩ, 1 kΩ + 10 µF | pin 1 → C3 → pin 5 (own bias); gain ×11; output from pin 7 instead |
 
-Before running: with the mic connected and the room quiet, measure the collector with a multimeter. Expect **1.1–1.9 V**. Too low → RB 680 kΩ; too high → RB 330 kΩ. Record the value.
+Why the LM358 on 3.3 V, not 5 V: on 3.3 V its output can't rise above ≈ 1.8 V, so it can never over-drive GPIO 1.
 
-Expected: `RATE,…` once a second near the requested rate; `RAW,…` values centred on the collector voltage (≈ 1500–2400 counts).
+Before running: room quiet, measure pin 1 (and pin 7 for two stages). Expect **0.9–1.1 V**, the same as pin 3. Record it.
+
+Expected: `RATE,…` once a second near the requested rate; `RAW,…` values centred on the op-amp output (≈ 1.0 V ≈ 1300 counts).
 
 Record:
 
 - [ ] Requested vs measured sample rate (try 3–4 rates, note where it stops keeping up)
-- [ ] Collector voltage (multimeter) and the transistor part number
+- [ ] Pin 1 / pin 7 DC voltage (multimeter), one or two stages
 - [ ] Raw logs: quiet room / talking / clap / phone 1 kHz tone (phone at a noted distance)
 - [ ] Mean value in silence (the bias in raw counts) and where clipping starts
 - [ ] If talking barely moves the RAW values, note it: that's the case for a second gain stage

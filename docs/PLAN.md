@@ -259,6 +259,7 @@ Session 1–2 rebuild Aidan's approach on our hardware as a measured baseline; e
 | 29/10 | Display task stack 4 KB → 6 KB, input task 3 KB → 4 KB | Measure first | Float printf and NVS writes are stack-hungry; RAM is plentiful, a stack overflow on demo day isn't |
 | 29/10 | Audio task waits 10 ms after an ADC read error; firmware logs column edges (Hz) at boot and on every mode change | — | No busy-loop if the ADC fails; the column table for R2 tests uses the real measured sample rate |
 | 29/10 | Electrical input circuit: low-pass capacitor 2.2 nF, not 15 nF (f_c ≈ 12 kHz) | 15 nF (first draft) | Review caught that the bias divider's 5 kΩ adds to the 1 kΩ series resistor: 15 nF would have cut off at ≈ 1.8 kHz |
+| 05/11 | Mic preamp: LM358 non-inverting, ×101 (one stage), optional second stage ×11; on the filtered 3.3 V rail | One-NPN stage (×35–50); LM358 on 5 V | NPN stage gave weak bars. Op-amp gain is set by two resistors, not the transistor's β. On 3.3 V the output can't exceed ≈ 1.8 V, so GPIO 1 is safe |
 | | | | |
 
 ## Sources

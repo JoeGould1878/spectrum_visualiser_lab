@@ -37,7 +37,7 @@ cd bringup/02_mic_adc && idf.py set-target esp32s3   # first time only
 idf.py build flash -p /dev/ttyACM0 monitor | tee ../../docs/evidence/logs/2026-10-29_02_rate_sweep.txt
 ```
 
-Wiring: electret capsule + one-NPN preamp, collector → GPIO 1 — parts table in `bringup/README.md`, schematic in `docs/diagrams/circuit.png`. First measure the collector voltage in a quiet room (want 1.1–1.9 V; adjust RB if not). For the rate sweep you can use the generator test input instead (1 kHz, 1 Vpp).
+Wiring: electret capsule + LM358 preamp, op-amp output → 4.7 kΩ → GPIO 1 — parts table in `bringup/README.md`, schematics in `docs/diagrams/preamp-1.png` / `preamp-2.png`. First measure the output in a quiet room (want 0.9–1.1 V, same as pin 3). For the rate sweep you can use the generator test input instead (1 kHz, 1 Vpp).
 
 - [ ] First ~20 s: six `RATE_TEST,<requested>,<measured>,<overflows>` lines → `python tools/rate_table.py LOG` gives the table (requested vs measured, % error)
   → **sets** `APP_SAMPLE_RATE_ACTUAL_HZ` (measured value at 40 000 requested); decides whether 40 kHz stays

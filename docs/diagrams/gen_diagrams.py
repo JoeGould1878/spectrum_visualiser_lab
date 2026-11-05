@@ -76,54 +76,33 @@ def report_svg(w, h, label, body, style, bg):
 # ---------------------------------------------------------------- 1. circuit
 def circuit():
     b = []
-    # --- mic preamp: electret capsule + one NPN, common emitter, collector feedback
+    # --- mic preamp: electret capsule + LM358 (full schematics in preamp-1 / preamp-2)
     b.append(R(30, 70, 375, 274))
-    b.append(T(46, 94, "Mic preamp · electret + 1 NPN", "tb"))
+    b.append(T(46, 94, "Mic preamp · electret + LM358", "tb"))
     b.append(R(352, 104, 43, 16, "res", 1))
     b.append(T(373, 99, "R0 220Ω", "ts", "middle"))
-    b.append(L(352, 112, 100, 112, "w w-p3"))
-    for x in (270, 340): b.append(dot(x, 112))
+    b.append(L(352, 112, 225, 112, "w w-p3"))
+    b.append(dot(340, 112)); b.append(dot(225, 112))
     b.append(L(340, 112, 340, 132, "w w-p3"))
     b.append(L(328, 132, 352, 132, "w w-ink2")); b.append(L(328, 139, 352, 139, "w w-ink2"))
     b.append(L(340, 139, 340, 152, "w w-gnd")); b.append(gnd(340, 152))
     b.append(T(340, 186, "C0 100µF", "ts", "middle"))
-    b.append(R(92, 122, 16, 40, "res", 1))
-    b.append(L(100, 162, 100, 216, "w w-ink2"))
-    b.append(T(114, 146, "R1 2.2kΩ", "ts"))
-    b.append(dot(100, 200))
-    b.append('<circle cx="100" cy="232" r="16" class="cap"/>')
-    b.append('<circle cx="100" cy="232" r="6" class="cap"/>')
-    b.append(T(122, 224, "+", "ts")); b.append(T(122, 250, "−", "ts"))
-    b.append(L(100, 248, 100, 258, "w w-gnd")); b.append(gnd(100, 258))
-    b.append(T(100, 286, "electret capsule", "ts", "middle"))
-    b.append(T(100, 300, "(case pin = −)", "ts", "middle"))
-    b.append(L(100, 200, 144, 200, "w w-sig"))
-    b.append(L(144, 188, 144, 212, "w w-ink2")); b.append(L(151, 188, 151, 212, "w w-ink2"))
-    b.append(L(151, 200, 243, 200, "w w-sig"))
-    b.append(T(148, 182, "C1 1µF", "ts", "middle"))
-    b.append(dot(205, 200))
-    b.append(L(270, 112, 270, 122, "w w-p3"))
-    b.append(R(262, 122, 16, 36, "res", 1))
-    b.append(L(270, 158, 270, 176, "w w-ink2"))
-    b.append(T(256, 144, "RC 4.7kΩ", "ts", "end"))
-    b.append(L(245, 184, 245, 216, "w w-ink2"))
-    b.append(P("M245 192L270 178", "w w-ink2"))
-    b.append(P("M245 208L268 222", "w w-ink2", "ink"))
-    b.append(L(270, 222, 270, 258, "w w-gnd")); b.append(gnd(270, 258))
-    b.append(T(275, 286, "Q1 NPN · BC547 / 2N3904", "ts", "middle"))
-    b.append(dot(270, 176))
-    b.append(P("M270 176H232", "w w-ink2"))
-    b.append(R(212, 168, 20, 16, "res", 1))
-    b.append(P("M212 176H205V200", "w w-ink2"))
-    b.append(T(198, 166, "RB 470kΩ", "ts", "end"))
-    b.append(P("M270 176H306V210", "w w-sig"))
-    b.append(dot(306, 210))
-    b.append(L(306, 210, 306, 228, "w w-sig"))
-    b.append(L(294, 228, 318, 228, "w w-ink2")); b.append(L(294, 235, 318, 235, "w w-ink2"))
-    b.append(L(306, 235, 306, 258, "w w-gnd")); b.append(gnd(306, 258))
-    b.append(T(322, 250, "C2 2.2nF", "ts"))
-    b.append(T(46, 316, "Gain ≈ ×35–50 (31–34 dB); collector sits at 1.1–1.9 V.", "ts"))
-    b.append(T(46, 331, "RC + C2 low-pass ≈ 15 kHz (anti-aliasing).", "ts"))
+    b.append(L(225, 112, 225, 140, "w w-p3"))
+    b.append(R(150, 140, 150, 110, "bx bx-acc"))
+    b.append(T(225, 166, "LM358 preamp", "tb2", "middle"))
+    b.append(T(225, 184, "R1 bias, 1 or 2 stages", "ts", "middle"))
+    b.append(T(225, 200, "×101 (40 dB) or ×1100", "ts", "middle"))
+    b.append(T(225, 216, "4.7 kΩ + 2.2 nF out", "ts", "middle"))
+    b.append(T(225, 236, "see preamp diagrams", "ts", "middle"))
+    b.append(L(225, 250, 225, 258, "w w-gnd")); b.append(gnd(225, 258))
+    b.append('<circle cx="80" cy="215" r="16" class="cap"/>')
+    b.append('<circle cx="80" cy="215" r="6" class="cap"/>')
+    b.append(T(100, 196, "+", "ts")); b.append(T(100, 244, "−", "ts"))
+    b.append(P("M80 199V185H150", "w w-sig"))
+    b.append(L(80, 231, 80, 258, "w w-gnd")); b.append(gnd(80, 258))
+    b.append(T(80, 296, "electret capsule", "ts", "middle"))
+    b.append(T(46, 316, "Output ≈ 1.0 V DC + audio, never above ≈ 1.8 V (LM358 on 3.3 V).", "ts"))
+    b.append(T(46, 331, "4.7 kΩ + 2.2 nF at the output: low-pass ≈ 15 kHz (anti-aliasing).", "ts"))
     # --- ESP32-S3
     b.append(R(420, 80, 220, 440, "bx bx-acc"))
     b.append(T(530, 106, "ESP32-S3-WROOM", "tb", "middle"))
@@ -140,8 +119,8 @@ def circuit():
     # preamp -> ESP connections
     b.append(P("M420 130H408V112H395", "w w-p3"))
     b.append(L(394, 170, 420, 170, "w w-gnd")); b.append(gnd(394, 170))
-    b.append(L(306, 210, 420, 210, "w w-sig"))
-    b.append(T(355, 203, "≈1.5 V + audio", "ts", "middle"))
+    b.append(L(300, 210, 420, 210, "w w-sig"))
+    b.append(T(360, 203, "≈1.0 V + audio", "ts", "middle"))
     for y in (130, 170, 210): b.append(dot(420, y))
     # --- electrical test input (dashed)
     b.append(R(40, 360, 350, 310, "bx-dash"))
@@ -248,7 +227,7 @@ def hw_high():
     y, h = 90, 100
     blocks = [
         (24, 170, "Sound source", ["voice, music, phone tone", "or function generator"], "bx"),
-        (250, 190, "Input stage", ["electret + NPN preamp", "or bias + RC test input"], "bx"),
+        (250, 190, "Input stage", ["electret + LM358 preamp", "or bias + RC test input"], "bx"),
         (520, 230, "ESP32-S3", ["samples at 40 kHz, FFT,", "maps 32 columns, reads buttons"], "bx bx-acc"),
         (800, 176, "LED display", ["4 × MAX7219, 32 × 8", "one column per band"], "bx"),
     ]
@@ -274,7 +253,7 @@ def hw_low():
     b.append(R(240, 66, 520, 420, "ctr", 10))
     b.append(T(256, 90, "ESP32-S3 · dual core, 240 MHz", "tb"))
     # externals left
-    b.append(box(24, 110, 196, 80, "Electret + NPN preamp", ["gain ≈ ×40, no AGC", "out ≈ 1.5 V DC + audio"]))
+    b.append(box(24, 110, 196, 80, "Electret + LM358 preamp", ["gain ×101 or ×1100, no AGC", "out ≈ 1.0 V DC + audio"]))
     b.append(box(24, 250, 196, 70, "Buttons SW1, SW2", ["MODE, LISTEN · to GND"]))
     b.append(box(24, 400, 196, 70, "Laptop", ["idf.py monitor · tools/*.py"]))
     # internals
@@ -378,7 +357,7 @@ def fw_low():
     audio = [
         ("adc_sampler_read()", "1024 raw 12-bit samples = 25.6 ms at 40 kHz (bass mode: 2048)"),
         ("frame stats", "min/max → clipping flag · RMS → silence flag"),
-        ("remove DC", "subtract the frame mean (the preamp's ≈ 1.5 V bias)"),
+        ("remove DC", "subtract the frame mean (the preamp's ≈ 1.0 V bias)"),
         ("decimate · bass mode only", "63-tap Blackman low-pass, keep 1 in 4 → 10 kHz"),
         ("Hann window", "dsps_wind_hann_f32: less leakage into neighbouring columns"),
         ("FFT", "dsps_fft2r_fc32 + bit reversal, N = 1024 (bass 512)"),
@@ -389,10 +368,10 @@ def fw_low():
     ]
     disp = [
         ("xQueueReceive(…, 0)", "take the newest frame; none for 500 ms → blank"),
-        ("choose view", "not listening → blank · tone-finder → digits · else bars"),
-        ("bar_model_update()", "−60 dB floor, 4 dB/row, falls 20 rows/s, peaks hold 0.5 s"),
-        ("draw", "frame_draw_bar / _peak, or “440Hz” + a marker at its column"),
-        ("frame_draw_status()", "top-right, right→left: silent · clip · above range · not listening"),
+        ("choose view", "staircase after a rotate · not listening → blank · else bars"),
+        ("bar_model_update()", "−46 dB floor, 3 dB/row: jumps up at once, falls 20 rows/s"),
+        ("draw", "frame_draw_bar() for each of the 32 columns"),
+        ("orientation", "k = 0..15 from NVS, changed by a long press on LISTEN"),
         ("frame_to_device_rows()", "apply the module's orientation flags"),
         ("max7219_write_all()", "4 chips × 8 rows over SPI; control registers re-sent every 1 s"),
     ]
@@ -426,13 +405,357 @@ def fw_low():
     b.append(T(550, yq + 75, "Shared between the two cores without locks.", "ts"))
     ym = top + 10 * (h + gap) + 12
     b.append(T(24, ym, "Modes (MODE button)", "tb2"))
-    b.append(T(24, ym + 20, "FULL: hybrid log 100 Hz–8 kHz  ·  BASS/VOICE: decimated, 50 Hz–2.5 kHz  ·  TONE-FINDER: frequency as digits  ·  LINEAR: baseline for comparison", "ts"))
+    b.append(T(24, ym + 20, "FULL: hybrid log 100 Hz–8 kHz  ·  BASS/VOICE: decimated, 50 Hz–2.5 kHz  ·  LINEAR: baseline for comparison  (tone-finder hidden for now)", "ts"))
     return svg(1000, ym + 40, "Spectrum visualiser · firmware detail (one frame)", "".join(b))
+
+# ---------------------------------------------------------------- 1b. LM358 preamp schematics
+RAIL, GR = 110, 480
+
+def vres(b, x, y1, y2, label=None, side="left"):
+    """Vertical resistor on a wire from y1 to y2 (body 48 px, centred)."""
+    m = (y1 + y2) / 2
+    b.append(L(x, y1, x, m - 24, "w w-ink2")); b.append(R(x - 8, m - 24, 16, 48, "res", 1))
+    b.append(L(x, m + 24, x, y2, "w w-ink2"))
+    if label:
+        if side == "left": b.append(T(x - 14, m + 4, label, "ts", "end"))
+        else: b.append(T(x + 14, m + 4, label, "ts"))
+
+def hres(b, x1, x2, y, label=None, cls="w w-sig"):
+    m = (x1 + x2) / 2
+    b.append(L(x1, y, m - 28, y, cls)); b.append(R(m - 28, y - 8, 56, 16, "res", 1))
+    b.append(L(m + 28, y, x2, y, cls))
+    if label: b.append(T(m, y - 14, label, "ts", "middle"))
+
+def vcap(b, x, y, label=None, plus=False, side="right"):
+    """Capacitor plates across a vertical wire at y (plates at y and y+7)."""
+    b.append(L(x - 12, y, x + 12, y, "w w-ink2")); b.append(L(x - 12, y + 7, x + 12, y + 7, "w w-ink2"))
+    if plus: b.append(T(x - 22, y - 2, "+", "ts"))
+    if label:
+        if side == "right": b.append(T(x + 18, y + 8, label, "ts"))
+        else: b.append(T(x - 18, y + 8, label, "ts", "end"))
+
+def hcap(b, x, y, label=None, plus_left=False):
+    b.append(L(x, y - 12, x, y + 12, "w w-ink2")); b.append(L(x + 7, y - 12, x + 7, y + 12, "w w-ink2"))
+    if plus_left: b.append(T(x - 10, y - 8, "+", "ts"))
+    if label: b.append(T(x + 3, y - 18, label, "ts", "middle"))
+
+def pinno(b, x, y, n):
+    b.append(T(x, y, str(n), "pinno", "middle"))
+
+def opamp_stage(b, x0, pins, rf, half, supply):
+    """One non-inverting stage. x0 = bias column / + input node. Output node at x0+230, y 260."""
+    pin_p, pin_n, pin_o = pins
+    # bias divider
+    b.append(dot(x0, RAIL)); vres(b, x0, RAIL, 230, "220 kΩ"); b.append(dot(x0, 230))
+    vres(b, x0, 230, GR, "100 kΩ"); b.append(dot(x0, GR))
+    # + input
+    b.append(L(x0, 230, x0 + 90, 230, "w w-sig")); pinno(b, x0 + 78, 224, pin_p)
+    # op-amp body
+    b.append(f'<polygon points="{x0+90},200 {x0+90},320 {x0+190},260" class="bx bx-acc"/>')
+    b.append(T(x0 + 99, 235, "+", "tb2")); b.append(T(x0 + 99, 296, "−", "tb2"))
+    b.append(T(x0 + 128, 258, "LM358", "ts", "middle")); b.append(T(x0 + 128, 272, half, "ts", "middle"))
+    # − input and gain leg
+    b.append(P(f"M{x0+90} 290H{x0+50}V370", "w w-ink2")); pinno(b, x0 + 78, 284, pin_n)
+    b.append(dot(x0 + 50, 370))
+    b.append(L(x0 + 50, 370, x0 + 50, 384, "w w-ink2"))
+    b.append(R(x0 + 42, 384, 16, 40, "res", 1)); b.append(T(x0 + 64, 408, "1 kΩ", "ts"))
+    b.append(L(x0 + 50, 424, x0 + 50, 440, "w w-ink2"))
+    vcap(b, x0 + 50, 440, "10 µF", plus=True)
+    b.append(L(x0 + 50, 447, x0 + 50, GR, "w w-gnd")); b.append(dot(x0 + 50, GR))
+    # feedback
+    b.append(L(x0 + 50, 370, x0 + 150, 370, "w w-ink2"))
+    b.append(R(x0 + 150, 362, 56, 16, "res", 1)); b.append(T(x0 + 178, 354, rf, "ts", "middle"))
+    b.append(P(f"M{x0+206} 370H{x0+230}V260", "w w-ink2"))
+    # output
+    b.append(L(x0 + 190, 260, x0 + 230, 260, "w w-sig")); pinno(b, x0 + 204, 252, pin_o)
+    b.append(dot(x0 + 230, 260))
+    if supply:
+        b.append(dot(x0 + 130, RAIL)); b.append(L(x0 + 130, RAIL, x0 + 130, 224, "w w-p3"))
+        pinno(b, x0 + 140, 216, 8)
+        # pin 4 to GND, hopping over the feedback wire
+        b.append(P(f"M{x0+130} 296V362A8 8 0 0 1 {x0+130} 378V{GR}", "w w-gnd"))
+        pinno(b, x0 + 140, 314, 4); b.append(dot(x0 + 130, GR))
+        # decoupling at the chip
+        b.append(dot(x0 + 168, RAIL)); b.append(L(x0 + 168, RAIL, x0 + 168, 146, "w w-p3"))
+        vcap(b, x0 + 168, 146, "100 nF", side="right")
+        b.append(L(x0 + 168, 153, x0 + 168, 160, "w w-gnd")); b.append(gnd(x0 + 168, 160))
+        b.append(T(x0 + 186, 170, "at pins 8–4", "ts"))
+    return x0 + 230
+
+def preamp(stages):
+    b = []
+    x_s1 = 380
+    out = opamp_stage(b, x_s1, (3, 2, 1), "Rf 100 kΩ", "half A", True)
+    rail_end = x_s1 + 168
+    if stages == 2:
+        x_s2 = 720
+        # C3 couples stage 1 out (≈1 V) into stage 2's own bias
+        b.append(L(out, 260, 640, 260, "w w-sig")); hcap(b, 640, 260, "C3 1 µF", plus_left=False)
+        b.append(P(f"M647 260H690V230H{x_s2}", "w w-sig"))
+        out = opamp_stage(b, x_s2, (5, 6, 7), "Rf 10 kΩ", "half B", False)
+        rail_end = x_s2
+    # output filter
+    xn = out + 130
+    hres(b, out, xn, 260, "4.7 kΩ"); b.append(dot(xn, 260))
+    b.append(L(xn, 260, xn, 350, "w w-gnd")); vcap(b, xn, 350, "2.2 nF")
+    b.append(L(xn, 357, xn, GR, "w w-gnd")); b.append(dot(xn, GR))
+    ex = xn + 90
+    b.append(L(xn, 260, ex, 260, "w w-sig"))
+    b.append(T((xn + ex) / 2, 252, "≈1.0 V + audio", "ts", "middle"))
+    # ESP32-S3
+    b.append(R(ex, 50, 190, 450, "bx bx-acc"))
+    b.append(T(ex + 95, 100, "ESP32-S3", "tb", "middle"))
+    b.append(T(ex + 95, 118, "Freenove board", "ts", "middle"))
+    b.append(T(ex + 10, 74, "3V3", "tm")); b.append(T(ex + 10, 264, "GPIO1 · ADC1", "tm"))
+    b.append(T(ex + 10, 484, "GND", "tm"))
+    b.append(T(ex + 95, 330, "display GND: use a", "ts", "middle"))
+    b.append(T(ex + 95, 345, "different GND pin", "ts", "middle"))
+    for y in (70, 260, GR): b.append(dot(ex, y))
+    # unfiltered 3V3 -> R0 -> filtered rail, C0
+    b.append(P(f"M{ex} 70H56V{RAIL}H76", "w w-p3"))
+    b.append(T(ex - 12, 62, "3V3 from the board (noisy)", "ts", "end"))
+    hres(b, 76, 140, RAIL, None, "w w-p3"); b.append(T(108, 96, "R0 220 Ω", "ts", "middle"))
+    b.append(dot(140, RAIL))
+    b.append(L(140, RAIL, rail_end, RAIL, "w w-p3"))
+    b.append(T(rail_end + 12, RAIL + 4, "filtered 3.3 V rail", "ts"))
+    b.append(L(140, RAIL, 140, 290, "w w-p3")); vcap(b, 140, 290, "C0", plus=True, side="left")
+    b.append(T(122, 314, "100 µF", "ts", "end"))
+    b.append(L(140, 297, 140, GR, "w w-gnd")); b.append(dot(140, GR))
+    # GND rail
+    b.append(L(140, GR, ex, GR, "w w-gnd"))
+    b.append(T(150, GR + 18, "GND rail", "ts"))
+    # mic
+    xm = 230
+    b.append(dot(xm, RAIL)); vres(b, xm, RAIL, 230, "R1 2.2 kΩ", side="right"); b.append(dot(xm, 230))
+    b.append(L(xm, 230, xm, 274, "w w-sig"))
+    b.append(f'<circle cx="{xm}" cy="290" r="16" class="cap"/>')
+    b.append(f'<circle cx="{xm}" cy="290" r="6" class="cap"/>')
+    b.append(T(xm + 20, 276, "+", "ts")); b.append(T(xm + 20, 314, "−", "ts"))
+    b.append(L(xm, 306, xm, GR, "w w-gnd")); b.append(dot(xm, GR))
+    b.append(T(xm + 26, 296, "electret", "ts")); b.append(T(xm + 26, 330, "− = case pin", "ts"))
+    b.append(L(xm, 230, 300, 230, "w w-sig")); hcap(b, 300, 230, "C1 1 µF", plus_left=True)
+    b.append(L(307, 230, x_s1, 230, "w w-sig"))
+    # gain notes under the stages
+    b.append(T(x_s1 + 115, GR + 36, "Stage 1: gain 1 + 100k/1k ≈ ×101 (40 dB)", "tb2", "middle"))
+    if stages == 2:
+        b.append(T(720 + 115, GR + 36, "Stage 2: 1 + 10k/1k ≈ ×11 (21 dB)", "tb2", "middle"))
+        b.append(T(560, GR + 56, "Total ≈ ×1100 (61 dB). Loud sound will clip: the bars stop at the top.", "ts", "middle"))
+    else:
+        b.append(T(x_s1 + 115, GR + 56, "10 µF keeps DC gain at 1, so pin 1 sits at the ≈1.0 V bias", "ts", "middle"))
+    W = ex + 190 + 30
+    # ---- bottom panels: DC check · chip pins · build tips
+    py = 560
+    pw = (W - 24 * 2 - 20 * 2) / 3
+    xs = [24 + i * (pw + 20) for i in range(3)]
+    ph = 290
+    for x in xs: b.append(R(x, py, pw, ph))
+    # DC check
+    x = xs[0] + 16
+    b.append(T(x, py + 24, "1 · DC check before plugging into GPIO1", "tb2"))
+    b.append(T(x, py + 42, "Power on, room quiet, meter black lead on GND.", "ts"))
+    rows = [("pin 8 (filtered rail)", "≈ 3.0–3.2 V"), ("mic +", "≈ 2.0–2.8 V"),
+            ("pin 3" + (", pin 5" if stages == 2 else ""), "≈ 0.95 V"),
+            ("pin 2" + (", pin 6" if stages == 2 else ""), "same as pin 3"),
+            ("pin 1" + (", pin 7" if stages == 2 else ""), "≈ 0.9–1.1 V"),
+            ("GPIO1", "same as pin " + ("7" if stages == 2 else "1"))]
+    for i, (k, v) in enumerate(rows):
+        yy = py + 68 + i * 22
+        b.append(T(x, yy, k, "tm")); b.append(T(xs[0] + pw - 16, yy, v, "tm", "end"))
+        b.append(L(x, yy + 7, xs[0] + pw - 16, yy + 7, "w rule"))
+    b.append(T(x, py + 216, "Output near 0 V or ≥ 1.7 V = stage stuck:", "ts"))
+    b.append(T(x, py + 232, "check Rf, the 1 kΩ + 10 µF leg and the", "ts"))
+    b.append(T(x, py + 248, "10 µF polarity; pin 3 not ≈ 0.95 V → check", "ts"))
+    b.append(T(x, py + 264, "the 220 k / 100 k divider and C1.", "ts"))
+    # chip pins
+    x = xs[1]
+    b.append(T(x + 16, py + 24, "2 · LM358 from above (notch at top)", "tb2"))
+    cx, cy, cw, chh = x + pw / 2 - 30, py + 54, 60, 150
+    b.append(R(cx, cy, cw, chh, "bx bx-acc", 4))
+    b.append(f'<path d="M{cx+20} {cy}A10 10 0 0 0 {cx+40} {cy}" class="w"/>')
+    b.append(f'<circle cx="{cx+12}" cy="{cy+14}" r="3" class="dot"/>')
+    left = [(1, "OUT A", "Rf, 4.7 kΩ" if stages == 1 else "Rf, C3"),
+            (2, "IN A−", "Rf, 1 kΩ"), (3, "IN A+", "C1, bias"), (4, "GND", "GND rail")]
+    right = [(8, "VCC", "filtered 3.3 V"),
+             (7, "OUT B", "→ pin 6" if stages == 1 else "Rf 10k, 4.7 kΩ"),
+             (6, "IN B−", "→ pin 7" if stages == 1 else "Rf 10k, 1 kΩ"),
+             (5, "IN B+", "→ GND" if stages == 1 else "C3, bias")]
+    for i, (n, nm, to) in enumerate(left):
+        yy = cy + 22 + i * 36
+        b.append(L(cx - 10, yy, cx, yy, "w w-ink2")); pinno(b, cx + 9, yy + 4, n)
+        b.append(T(cx - 14, yy - 2, nm, "tm", "end")); b.append(T(cx - 14, yy + 12, to, "ts", "end"))
+    for i, (n, nm, to) in enumerate(right):
+        yy = cy + 22 + i * 36
+        b.append(L(cx + cw, yy, cx + cw + 10, yy, "w w-ink2")); pinno(b, cx + cw - 9, yy + 4, n)
+        b.append(T(cx + cw + 14, yy - 2, nm, "tm")); b.append(T(cx + cw + 14, yy + 12, to, "ts"))
+    b.append(T(x + pw / 2, py + 230, "100 nF straight across pins 8 and 4.", "ts", "middle"))
+    b.append(T(x + pw / 2, py + 246, "One-stage build: tie off half B" if stages == 1 else "Both halves are in the same chip:",
+               "ts", "middle"))
+    b.append(T(x + pw / 2, py + 262, "(7 → 6, 5 → GND) so it can't oscillate." if stages == 1 else "pins 8 and 4 power both.",
+               "ts", "middle"))
+    # tips
+    x = xs[2] + 16
+    b.append(T(x, py + 24, "3 · Build tips", "tb2"))
+    tips = ["Breadboard + rail = filtered 3.3 V only (after R0),",
+            "− rail = GND. Nothing else on these rails.",
+            "One wire GND rail → an ESP GND pin; the display",
+            "GND goes to a different ESP GND pin.",
+            "Electrolytics: C0 + to the rail, C1 + to the mic,",
+            "10 µF + to the 1 kΩ (pin side).",
+            "Mic leads short; − is the pin joined to the case.",
+            ("Function generator: mic out, ≤ 10 mVpp into C1" if stages == 1
+             else "Function generator: mic out, ≤ 1 mVpp into C1"),
+            ("(×101 → ≈ 1 Vpp at pin 1)." if stages == 1
+             else "(100:1 divider: 10 kΩ then 100 Ω to GND)."),
+            ]
+    ys = [48, 66, 94, 112, 140, 158, 186, 214, 232]
+    for yy, t in zip(ys, tips):
+        b.append(T(x, py + yy, t, "ts"))
+    H = py + ph + 20
+    name = "one stage (×101)" if stages == 1 else "two stages (×1100)"
+    return svg(int(W), H, f"Mic preamp · LM358, {name}", "".join(b))
+
+def preamp1(): return preamp(1)
+def preamp2(): return preamp(2)
+
+# ---------------------------------------------------------------- 4b. software flowchart
+def fc_proc(b, cx, y, w, h, lines, cls="bx"):
+    b.append(R(cx - w / 2, y, w, h, cls, 4))
+    n = len(lines); top = y + h / 2 - (n - 1) * 8 + 4
+    for i, s in enumerate(lines):
+        b.append(T(cx, top + i * 16, s, "t" if i == 0 else "ts", "middle"))
+
+def fc_io(b, cx, y, w, h, lines):
+    k = 10
+    x1, x2 = cx - w / 2, cx + w / 2
+    b.append(f'<polygon points="{x1+k},{y} {x2+k},{y} {x2-k},{y+h} {x1-k},{y+h}" class="bx io"/>')
+    n = len(lines); top = y + h / 2 - (n - 1) * 8 + 4
+    for i, s in enumerate(lines):
+        b.append(T(cx, top + i * 16, s, "t" if i == 0 else "ts", "middle"))
+
+def fc_dec(b, cx, cy, w, h, lines):
+    b.append(f'<polygon points="{cx},{cy-h/2} {cx+w/2},{cy} {cx},{cy+h/2} {cx-w/2},{cy}" class="dec"/>')
+    n = len(lines); top = cy - (n - 1) * 7 + 4
+    for i, s in enumerate(lines):
+        b.append(T(cx, top + i * 14, s, "tb2", "middle"))
+
+def fc_term(b, cx, y, w, h, text):
+    b.append(R(cx - w / 2, y, w, h, "bx bx-acc", h / 2))
+    b.append(T(cx, y + h / 2 + 5, text, "tb2", "middle"))
+
+def fw_flow():
+    b = []
+    A = lambda d: P(d, "w w-ink2", "ink")
+    # start + app_main
+    fc_term(b, 500, 60, 220, 34, "Power on / reset")
+    b.append(L(500, 94, 500, 112, "w w-ink2", "ink"))
+    fc_proc(b, 500, 112, 660, 52, ["app_main (runs once)",
+            "load settings from NVS → create 1-slot queue → start display, audio and input tasks"])
+    b.append(L(500, 164, 500, 184, "w w-ink2"))
+    b.append(L(170, 186, 720, 186, "w fork"))
+    b.append(L(170, 188, 170, 214, "w w-ink2", "ink")); b.append(L(720, 188, 720, 214, "w w-ink2", "ink"))
+    b.append(T(728, 204, "the three tasks then run side by side, for ever", "ts"))
+    # lanes
+    b.append(R(24, 214, 400, 560, "ctr", 10)); b.append(R(576, 214, 400, 500, "ctr", 10))
+    b.append(T(40, 238, "audio_task", "tmb")); b.append(T(40, 255, "core 0 · one pass per 25.6 ms of sound", "ts"))
+    b.append(T(592, 238, "display_task", "tmb")); b.append(T(592, 255, "core 1 · one pass every 25 ms (40 fps)", "ts"))
+    # ---- audio lane (main x 170, side x 348)
+    M, S = 170, 348
+    fc_proc(b, M, 270, 230, 40, ["Start ADC1 on GPIO1", "40 kHz, DMA into a buffer"])
+    b.append(L(M, 310, M, 338, "w w-ink2", "ink")); b.append(dot(M, 326))
+    fc_dec(b, M, 366, 160, 56, ["Mode", "changed?"])
+    b.append(L(M + 80, 366, S - 52, 366, "w w-ink2", "ink")); b.append(T(M + 90, 359, "Yes", "lbl"))
+    fc_proc(b, S, 346, 104, 40, ["Set FFT size", "+ column map"])
+    b.append(A(f"M{S} 386V414H{M+6}")); b.append(L(M, 394, M, 414, "w w-ink2")); b.append(T(M + 6, 408, "No", "lbl"))
+    b.append(dot(M, 414)); b.append(L(M, 414, M, 426, "w w-ink2", "ink"))
+    fc_dec(b, M, 454, 160, 56, ["Listening?"])
+    b.append(L(M + 80, 454, S - 52, 454, "w w-ink2", "ink")); b.append(T(M + 90, 447, "No", "lbl"))
+    fc_proc(b, S, 434, 104, 40, ["Blank frame", "wait 100 ms"])
+    b.append(A(f"M{S+52} 454H412V326H{M+6}"))
+    b.append(L(M, 482, M, 502, "w w-ink2", "ink")); b.append(T(M + 6, 496, "Yes", "lbl"))
+    fc_io(b, M, 502, 230, 40, ["Read 1024 samples", "25.6 ms of sound"])
+    b.append(L(M, 542, M, 562, "w w-ink2", "ink"))
+    fc_proc(b, M, 562, 230, 40, ["Remove DC · Hann window · FFT", "512 bins in dB, 39 Hz each"])
+    b.append(L(M, 602, M, 622, "w w-ink2", "ink"))
+    fc_proc(b, M, 622, 230, 40, ["Bins → 32 column levels", "loudest bin in each column"])
+    b.append(L(M, 662, M, 682, "w w-ink2", "ink"))
+    fc_io(b, M, 682, 230, 48, ["Put frame in the queue", "(replaces any unread one)"])
+    b.append(A(f"M{M} 730V752H38V326H{M-6}"))
+    # queue
+    b.append(R(440, 520, 120, 80, "bx q"))
+    b.append(T(500, 545, "Queue", "tmb", "middle")); b.append(T(500, 563, "1 slot", "ts", "middle"))
+    b.append(T(500, 579, "newest frame wins", "ts", "middle"))
+    b.append(A(f"M{M+115} 706H500V600"))
+    b.append(A("M500 520V440H640"))
+    # ---- display lane (main x 720, side x 902)
+    M, S = 720, 902
+    fc_proc(b, M, 270, 230, 40, ["Start SPI2 + 4 × MAX7219", "1 MHz, brightness from NVS"])
+    b.append(L(M, 310, M, 346, "w w-ink2", "ink")); b.append(dot(M, 326))
+    fc_proc(b, M, 346, 230, 48, ["Wait for the 25 ms tick", "apply new brightness / rotation"])
+    b.append(L(M, 394, M, 412, "w w-ink2", "ink"))
+    fc_dec(b, M, 440, 160, 56, ["New frame", "in queue?"])
+    b.append(L(M + 80, 440, S - 52, 440, "w w-ink2", "ink")); b.append(T(M + 90, 433, "No", "lbl"))
+    fc_proc(b, S, 420, 104, 40, ["No frame for", "0.5 s → blank"])
+    b.append(A(f"M{S} 460V494H{M+6}")); b.append(L(M, 468, M, 494, "w w-ink2")); b.append(T(M + 6, 486, "Yes", "lbl"))
+    b.append(dot(M, 494)); b.append(L(M, 494, M, 514, "w w-ink2", "ink"))
+    fc_proc(b, M, 514, 230, 48, ["Bar rows = (dB − floor) ÷ 3 dB", "jump up at once, fall 20 rows/s"])
+    b.append(L(M, 562, M, 582, "w w-ink2", "ink"))
+    fc_proc(b, M, 582, 230, 40, ["Draw 32 bars", "then apply the rotation"])
+    b.append(L(M, 622, M, 642, "w w-ink2", "ink"))
+    fc_io(b, M, 642, 230, 40, ["Send 8 rows × 4 chips", "over SPI"])
+    b.append(A(f"M{M} 682V700H966V326H{M+6}"))
+    # ---- input strip
+    b.append(R(24, 800, 952, 170, "ctr", 10))
+    b.append(T(40, 824, "input_task", "tmb")); b.append(T(130, 824, "core 1 · one pass every 10 ms", "ts"))
+    cy = 892
+    b.append(dot(60, cy))
+    b.append(L(60, cy, 80, cy, "w w-ink2", "ink"))
+    fc_proc(b, 140, cy - 22, 120, 44, ["Wait 10 ms"])
+    b.append(L(200, cy, 230, cy, "w w-ink2", "ink"))
+    fc_io(b, 310, cy - 22, 150, 44, ["Read both buttons", "debounced"])
+    b.append(L(385, cy, 410, cy, "w w-ink2", "ink"))
+    fc_dec(b, 470, cy, 120, 60, ["Pressed?"])
+    b.append(L(530, cy, 560, cy, "w w-ink2", "ink")); b.append(T(536, cy - 7, "Yes", "lbl"))
+    b.append(R(560, cy - 52, 240, 104, "bx", 4))
+    acts = [("MODE short", "next mode"), ("MODE long", "next brightness"),
+            ("LISTEN short", "stop / start"), ("LISTEN long", "rotate display")]
+    for i, (k, v) in enumerate(acts):
+        yy = cy - 28 + i * 20
+        b.append(T(574, yy, k, "tm")); b.append(T(676, yy, "→ " + v, "ts"))
+    b.append(L(800, cy, 822, cy, "w w-ink2", "ink"))
+    fc_proc(b, 890, cy - 22, 136, 44, ["Save to NVS", "kept after power-off"])
+    b.append(A(f"M890 {cy+22}V952H60V{cy+4}"))
+    b.append(A(f"M470 {cy+30}V952")); b.append(T(476, cy + 46, "No", "lbl")); b.append(dot(470, 952))
+    # requests up into the other tasks (atomic flags, read at the start of each pass)
+    b.append(P(f"M610 {cy-52}V786H250V776", "w w-ink2 dash", "ink"))
+    b.append(T(618, 820, "mode, listening", "ts"))
+    b.append(P(f"M760 {cy-52}V716", "w w-ink2 dash", "ink"))
+    b.append(T(768, 760, "brightness, rotation", "ts"))
+    # legend
+    ly = 1000
+    b.append(T(24, ly, "Shapes:", "tb2"))
+    lx = 90
+    b.append(R(lx, ly - 14, 40, 18, "bx bx-acc", 9)); b.append(T(lx + 48, ly, "start", "ts"))
+    lx += 100
+    b.append(R(lx, ly - 14, 40, 18, "bx", 3)); b.append(T(lx + 48, ly, "step", "ts"))
+    lx += 96
+    b.append(f'<polygon points="{lx+20},{ly-16} {lx+40},{ly-5} {lx+20},{ly+6} {lx},{ly-5}" class="dec"/>')
+    b.append(T(lx + 48, ly, "decision", "ts"))
+    lx += 116
+    b.append(f'<polygon points="{lx+6},{ly-14} {lx+46},{ly-14} {lx+34},{ly+4} {lx-6},{ly+4}" class="bx io"/>')
+    b.append(T(lx + 54, ly, "hardware in / out", "ts"))
+    lx += 170
+    b.append(R(lx, ly - 14, 40, 18, "bx q", 3)); b.append(T(lx + 48, ly, "queue between cores", "ts"))
+    lx += 180
+    b.append(L(lx, ly - 5, lx + 36, ly - 5, "w w-ink2 dash", "ink")); b.append(T(lx + 44, ly, "button request (a flag)", "ts"))
+    return svg(1000, 1020, "Spectrum visualiser · software flowchart", "".join(b))
 
 DIAGRAMS = [
     ("circuit", "Wiring", "Every connection, with the electrical test input as the alternative to the mic. Pin order on the modules is drawn for clarity, not as the physical header order.", circuit),
+    ("preamp-1", "Mic preamp: LM358, one stage", "Electret capsule into one LM358 stage (gain ×101), with the DC readings to check and the chip pins. Start here.", preamp1),
+    ("preamp-2", "Mic preamp: LM358, two stages", "Same as one stage, then the chip's second half adds ×11 (total ×1100) for a quiet capsule.", preamp2),
     ("hw-overview", "Hardware overview", "What each part does and how signals move between them.", hw_high),
     ("hw-detail", "Hardware detail", "Inside the ESP32-S3: which peripheral handles each signal, and where each core does its work.", hw_low),
+    ("fw-flow", "Software flowchart", "What the firmware does from power-on: start-up once, then three tasks looping side by side. The queue is the only link between sound and display.", fw_flow),
     ("fw-overview", "Firmware overview", "Three FreeRTOS tasks, what each owns, and how they talk.", fw_high),
     ("fw-detail", "Firmware detail", "What happens to one captured frame, from raw samples to LEDs.", fw_low),
 ]
@@ -468,6 +791,12 @@ STYLE_RULES = """
 .w-p5{stroke:VAR(p5);stroke-width:2}
 .w-gnd{stroke:VAR(gnd)}
 .dash{stroke-dasharray:6 4}
+.dec{fill:VAR(q);stroke:VAR(qline);stroke-width:1.4}
+.io{stroke:VAR(sig);stroke-width:1.4}
+.fork{stroke:VAR(ink2);stroke-width:5}
+.rule{stroke:VAR(line);stroke-width:0.8}
+.lbl{fill:VAR(acc);font:600 11.5px FONT}
+.pinno{fill:VAR(acc);font:600 11px MONO}
 .dot{fill:VAR(ink2)}
 .mk{fill:VAR(ink2)}
 .mk-sig{fill:VAR(sig)}
