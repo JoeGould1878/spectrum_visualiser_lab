@@ -38,14 +38,40 @@ Expected (serial log says which step is running):
 
 1. **STEP 1** — all LEDs on for 3 s (hardware test mode).
 2. **STEP 2** — three single LEDs, 4 s each: **A** = chip 0 row-register 0 bit 7, **B** = same register bit 0, **C** = row-register 7 bit 7. Chip 0 is the one nearest the DIN pin.
-3. **STEP 3** — staircase shown in 16 orientations, 4 s each, each logged as `ORIENT k: REVERSE_DEVICES=… FLIP_X=… FLIP_Y=… TRANSPOSE=…`. The right one is a clean staircase rising from bottom-left (1 pixel) to top-right (8 pixels) in steps of 4 columns, with the input connector on the side you want as "left". If two look right, pick the one where the module's DIN is on the left.
+3. **STEP 3 — orientation probe.** Raw register writes, no `frame_gfx`. Four single LEDs are added one at a time, 5 s each, and the sequence runs 3 times (1 min) before STEP 4. Hold the strip exactly as it will sit in the demo; "left/right/up/down" mean as you look at it.
+
+   | Step | Lit (cumulative) | Log line |
+   | --- | --- | --- |
+   | P1 | chip 0, reg 0, bit 0 — the **origin O** | `PROBE P1 origin: dev0 reg0 bit0` |
+   | P2 | + chip 0, reg 0, bit 7 | `PROBE P2: + dev0 reg0 bit7 (which way from O?)` |
+   | P3 | + chip 0, reg 7, bit 0 | `PROBE P3: + dev0 reg7 bit0 (which way from O?)` |
+   | P4 | + chip 1, reg 0, bit 0 | `PROBE P4: + dev1 reg0 bit0 (which module?)` |
+
+   Note four things: where P2 is from O, where P3 is from O, which module (1–4 from the left) O is in, and which module P4 is in. Then set the flags in `main/app_config.h`:
+
+   | You see | Set |
+   | --- | --- |
+   | P2 is **left or right** of O (same row) | `TRANSPOSE = false` |
+   | P2 is **above or below** O (same column) | `TRANSPOSE = true` |
+   | TRANSPOSE false: P2 **left** of O / **right** of O | `FLIP_X = false` / `true` |
+   | TRANSPOSE false: P3 **above** O / **below** O | `FLIP_Y = false` / `true` |
+   | TRANSPOSE true: P2 **above** O / **below** O | `FLIP_Y = false` / `true` |
+   | TRANSPOSE true: P3 **right** of O / **left** of O | `FLIP_X = false` / `true` |
+   | O is in the **leftmost** module / the **rightmost** module | `REVERSE_DEVICES = false` / `true` |
+
+   Sanity checks — if either fails, stop: the chain or the driver's device order is not what `frame_to_device_rows()` assumes.
+   - P2 and P3 are at right angles to each other, and each is 7 LEDs from O (opposite corners of one module's edges).
+   - P4 is in the module next to O's.
+
+   Why the table is right: in `frame_to_device_rows()`, without transpose `reg = y'` and `bit = 7 − x'`, so bit 7 is x' = 0 (left) and reg 7 is y' = 7 (top); with transpose `reg = x'` and `bit = y'`, so bit 7 is y' = 7 (top) and reg 7 is x' = 7 (right) (x', y' = frame coordinates after the flips). `host_tests/test_frame_gfx.c` checks the table against the code for all 16 flag sets.
 4. **STEP 4** — staircase with the `APP_ORIENT_*` values from `main/app_config.h`, rewritten 40×/s. A `SOAK …` line every 10 s gives write time (avg/max). After setting the flags, reflash and let it run 5 min.
 
 Record:
 
 - [ ] Photo: test mode (all on)
 - [ ] Photos of STEP 2 A, B, C (which chip is chip 0, which corner is row 0 / bit 7)
-- [ ] The `ORIENT k` number that looks right → copy its four flags into `APP_ORIENT_*` in `main/app_config.h`
+- [ ] Probe answers (P2 and P3 direction from O, module of O and P4) → the four `APP_ORIENT_*` flags from the table above
+- [ ] Photos of the probe at P3 (O, P2, P3 lit) and P4: `docs/evidence/photos/<date>_A1_probe_P3.jpg`, `..._P4.jpg`
 - [ ] Staircase photo, left = column 0
 - [ ] Log of the 5-minute soak (`write_avg` / `write_max`); any random pixels? (3.3 V logic into a 5 V chip — if yes, plan the 74HCT125 buffer)
 - [ ] Optional: repeat the soak at `APP_MAX7219_CLOCK_HZ` = 4 MHz and 10 MHz; note the fastest that stays clean

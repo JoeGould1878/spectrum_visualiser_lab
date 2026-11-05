@@ -9,9 +9,15 @@
  *   1. Hardware test mode for 3 s -> every LED lit?
  *   2. Raw single bits, no frame_gfx: chip 0 / row register 0 / bit 7, then
  *      bit 0, then row register 7 / bit 7 -> which chip, which corner? (photo)
- *   3. Orientation sweep: all 16 frame_orient_t combinations, 4 s each, showing
- *      a staircase. The right one rises smoothly from bottom-left to top-right.
- *      Note its number from the serial log, copy the flags into main/app_config.h.
+ *   3. Orientation probe (raw registers, no frame_gfx): four single LEDs, added
+ *      one at a time, 5 s each, then the sequence repeats 3 times:
+ *        P1 origin O = chip 0 / reg 0 / bit 0
+ *        P2 + chip 0 / reg 0 / bit 7   -> which way from O?
+ *        P3 + chip 0 / reg 7 / bit 0   -> which way from O?
+ *        P4 + chip 1 / reg 0 / bit 0   -> which module?
+ *      The table in bringup/README.md turns the answers into the four
+ *      APP_ORIENT_* flags in main/app_config.h (index convention out[dev*8+reg],
+ *      the same as frame_to_device_rows()).
  *   4. Soak: staircase with the app_config.h orientation, rewritten at the real
  *      display rate (40 fps) for 5 min -> any random pixels? (3.3 V logic)
  *      Logs average write time for the latency budget.
@@ -25,7 +31,8 @@
 #include "frame_gfx.h"
 #include "app_config.h"
 
-#define SWEEP_SHOW_MS   4000
+#define PROBE_STEP_MS   5000
+#define PROBE_REPEATS   3
 #define SOAK_MINUTES    5
 
 static const char *TAG = "bringup01";
@@ -38,6 +45,30 @@ static void raw_bit(int dev, int reg, int bit, const char *what)
     ESP_LOGI(TAG, "STEP 2: %s (chip %d, row register %d, bit %d)", what, dev, reg, bit);
     ESP_ERROR_CHECK(max7219_write_all(s_disp, rows));
     vTaskDelay(pdMS_TO_TICKS(4000));
+}
+
+/* One probe step: add one LED to rows[] (cumulative), write, log, hold. */
+static void probe_add(uint8_t *rows, int dev, int reg, int bit, const char *line)
+{
+    rows[dev * 8 + reg] |= (uint8_t)(1u << bit);
+    ESP_LOGI(TAG, "%s", line);
+    ESP_ERROR_CHECK(max7219_write_all(s_disp, rows));
+    vTaskDelay(pdMS_TO_TICKS(PROBE_STEP_MS));
+}
+
+static void probe(void)
+{
+    ESP_LOGI(TAG, "STEP 3: orientation probe, %d s per step, %d rounds", PROBE_STEP_MS / 1000, PROBE_REPEATS);
+    ESP_LOGI(TAG, "PROBE: hold the strip as it will sit in the demo; 'left/right/up/down' as you look at it");
+    for (int round = 1; round <= PROBE_REPEATS; round++) {
+        uint8_t rows[APP_MAX7219_DEVICES * 8] = {0};
+        ESP_LOGI(TAG, "PROBE round %d/%d", round, PROBE_REPEATS);
+        probe_add(rows, 0, 0, 0, "PROBE P1 origin: dev0 reg0 bit0");
+        probe_add(rows, 0, 0, 7, "PROBE P2: + dev0 reg0 bit7 (which way from O?)");
+        probe_add(rows, 0, 7, 0, "PROBE P3: + dev0 reg7 bit0 (which way from O?)");
+        probe_add(rows, 1, 0, 0, "PROBE P4: + dev1 reg0 bit0 (which module?)");
+    }
+    ESP_ERROR_CHECK(max7219_clear(s_disp));
 }
 
 static void staircase(frame_t *f)
@@ -78,22 +109,11 @@ void app_main(void)
     raw_bit(0, 0, 0, "B");
     raw_bit(0, 7, 7, "C");
 
-    /* 3. Orientation sweep */
+    /* 3. Orientation probe */
+    probe();
+
     frame_t f;
     staircase(&f);
-    ESP_LOGI(TAG, "STEP 3: orientation sweep. Correct = staircase rising left->right from the bottom");
-    for (int k = 0; k < 16; k++) {
-        frame_orient_t o = {
-            .reverse_devices = k & 1,
-            .flip_x = (k >> 1) & 1,
-            .flip_y = (k >> 2) & 1,
-            .transpose = (k >> 3) & 1,
-        };
-        ESP_LOGI(TAG, "ORIENT %2d: REVERSE_DEVICES=%d FLIP_X=%d FLIP_Y=%d TRANSPOSE=%d",
-                 k, o.reverse_devices, o.flip_x, o.flip_y, o.transpose);
-        show(&f, &o);
-        vTaskDelay(pdMS_TO_TICKS(SWEEP_SHOW_MS));
-    }
 
     /* 4. Soak with the orientation from app_config.h */
     const frame_orient_t orient = {
