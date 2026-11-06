@@ -39,6 +39,8 @@
 #define APP_ORIENT_FLIP_Y           true    /* T1 probe 2026-11-05: P3 below O */
 #define APP_ORIENT_TRANSPOSE        false   /* T1 probe 2026-11-05: P2 in the same row as O */
 #define APP_STAIRCASE_BOOT_MS    1500   /* boot check: staircase rising bottom-left -> top-right, then live bars */
+#define APP_MODE_LABEL_MS        1000   /* after a mode change (and at boot): show "LOG"/"LINEAR" this long, then bars.
+                                           Chosen by eye for readability, not measured */
 
 /* ---------------- Sampling and FFT ---------------- */
 #define APP_SAMPLE_RATE_HZ       40000   /* requested; S3 allows 611..83333 (SOC_ADC_SAMPLE_FREQ_THRES_*) */

@@ -45,6 +45,14 @@ static void draw_staircase(frame_t *fr)
     for (int x = 0; x < FRAME_COLS; x++) frame_draw_bar(fr, x, x / 4 + 1);
 }
 
+/* "LOG" or "LINEAR", centred (the 3x5 font is 4 px per letter, minus the last gap). */
+static void draw_mode_label(frame_t *fr, app_mode_t mode)
+{
+    const char *name = app_mode_name(mode);
+    int width = frame_draw_text(fr, name, FRAME_COLS);   /* off-screen: just measures */
+    frame_draw_text(fr, name, (FRAME_COLS - width) / 2);
+}
+
 static void draw_spectrum(frame_t *fr, const audio_frame_t *a, float dt_s)
 {
     bar_model_update(&s_bars, a->col_db, dt_s);
@@ -68,6 +76,7 @@ static void display_task(void *arg)
     int64_t last_fresh_us = 0;
     int64_t next_resync_us = esp_timer_get_time() + APP_DISPLAY_RESYNC_MS * 1000LL;
     int last_mode = -1;   /* no mode seen yet */
+    int64_t label_until_us = 0;   /* mode name shown until then */
     unsigned brightness = 0xFF;
     int64_t staircase_until_us = esp_timer_get_time() + APP_STAIRCASE_BOOT_MS * 1000LL;
     ESP_LOGI(TAG, "ORIENT fixed: R=%d FX=%d FY=%d T=%d (boot staircase should rise bottom-left -> top-right)",
@@ -117,8 +126,13 @@ static void display_task(void *arg)
             if ((int)latest.mode != last_mode) {   /* new mode: don't carry old bars over */
                 bar_model_init(&s_bars, &bcfg, APP_DISPLAY_COLS);
                 last_mode = (int)latest.mode;
+                /* Name the mode for a moment (also at boot: the mode comes from NVS) */
+                label_until_us = now + APP_MODE_LABEL_MS * 1000LL;
+                ESP_LOGI(TAG, "label %s", app_mode_name(latest.mode));
             }
-            if (latest.status & FRAME_STATUS_NOT_LISTENING) {
+            if (now < label_until_us) {
+                draw_mode_label(&fr, latest.mode);
+            } else if (latest.status & FRAME_STATUS_NOT_LISTENING) {
                 bar_model_init(&s_bars, &bcfg, APP_DISPLAY_COLS);   /* blank, not falling */
             } else {
                 draw_spectrum(&fr, &latest, dt_s);

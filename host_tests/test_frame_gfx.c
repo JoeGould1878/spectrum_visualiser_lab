@@ -115,6 +115,20 @@ int main(void)
     frame_draw_text(&f, "8", -100);   /* fully off-screen: no crash, nothing drawn */
     CHECK(count_pixels(&f) == 0);
 
+    /* mode label letters: every one is in the font (unknown chars draw as blank) */
+    for (const char *p = "LOGINEAR"; *p; p++) {
+        char s[2] = {*p, 0};
+        frame_clear(&f);
+        frame_draw_text(&f, s, 0);
+        CHECK(count_pixels(&f) > 0);
+    }
+    frame_clear(&f);
+    CHECK(frame_draw_text(&f, "LOG", (32 - 11) / 2) == 11);
+    frame_print_ascii(&f);
+    frame_clear(&f);
+    CHECK(frame_draw_text(&f, "LINEAR", (32 - 23) / 2) == 23);   /* fits in 32 columns */
+    frame_print_ascii(&f);
+
     /* status: flags in the top-right, area cleared under them, bars untouched otherwise */
     frame_clear(&f);
     frame_draw_status(&f, FRAME_STATUS_SILENT | FRAME_STATUS_NOT_LISTENING);
