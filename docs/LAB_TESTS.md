@@ -80,14 +80,28 @@ idf.py build flash -p /dev/ttyACM0 monitor | tee docs/evidence/logs/<date>_<test
 - [ ] Any `ADC buffer overflowed` warnings? If yes → raise `APP_DEBUG_EVERY_N_FRAMES`
 
 ### B3. Electrical input path (function generator) — needs a small circuit
-Proposed circuit (confirm before building): generator → 10 µF cap → node biased at 1.65 V by two 10 kΩ resistors (3.3 V to GND) → 1 kΩ → GPIO 1, with **2.2 nF** from GPIO 1 to GND. **Mic unplugged from GPIO 1 while using this.** Generator: sine, **1 Vpp, 0 V offset** (pin sees 1.15–2.15 V).
+Proposed circuit (confirm before building): generator → 10 µF cap → node biased at 1.65 V by two 10 kΩ resistors (3.3 V to GND) → 1 kΩ → GPIO 1, with **2.2 nF** from GPIO 1 to GND. **Preamp output (the 4.7 kΩ lead) unplugged from GPIO 1 while using this.** Generator: sine, **1 Vpp, 0 V offset** (pin sees 1.15–2.15 V).
 Why these values: the bias divider looks like 5 kΩ (10 k ∥ 10 k) in series with the 1 kΩ, so the low-pass is set by 6 kΩ × C: 2.2 nF → f_c = 1 / (2π · 6 kΩ · 2.2 nF) ≈ 12 kHz, above the 8 kHz display range and below Nyquist (20 kHz). The 10 µF with 5 kΩ gives a high-pass at ≈ 3 Hz, so no bass is lost. (An earlier draft said 15 nF, which with the 6 kΩ would cut off at ≈ 1.8 kHz — wrong.) A single RC only gives ≈ −5 dB at 20 kHz: enough to *show* the aliasing improvement, not remove it.
-- [ ] Column accuracy (R2): tone at the centre of every 4th column — note which column lights. Use the `columns (Hz):` line the firmware prints at boot and on every mode change (it uses the measured sample rate; the `test_band_map` table assumes exactly 40 kHz)
-- [ ] Tone-finder accuracy: 100, 200, 440, 1000, 2000, 5000, 7500 Hz — one log per tone (`capture.sh B3_tone440` …), then `tools/tone_stats.py LOG --set-hz F --path electrical --csv docs/evidence/accuracy.csv` per log, then `tools/plot_accuracy.py docs/evidence/accuracy.csv`
-- [ ] Frequency response (R1): 50 Hz → 20 kHz in steps, same amplitude — peak column level vs frequency
-- [ ] Leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 — how many neighbouring columns light
-- [ ] Two-tone resolution (if the generator has two channels, or generator + phone): LOG mode, bin width 39 Hz (bass/voice mode removed 05/11)
-- [ ] Aliasing (R6): 25 kHz and 30 kHz tones — where do they show up? With and without the 2.2nF cap
+**Procedure (06/11)** — firmware with `APP_SAMPLE_RATE_ACTUAL_HZ` 40314 (measured), LOG mode unless stated. One log per tone, about 10 s each:
+```bash
+tools/capture.sh B3_log_433            # Ctrl+] after ~10 s
+python3 tools/tone_stats.py docs/evidence/logs/2026-11-06_B3_log_433.txt --set-hz 433 --path electrical --skip-s 3 --csv docs/evidence/accuracy.csv
+```
+`tone_stats.py` prints shown Hz, error, level (dBFS) and the **loudest column** — that column is the R2 result. `--skip-s 3` skips the reset + 1.5 s boot staircase.
+
+Tones = the centre of every 4th column at the measured rate (bins 39.37 Hz; from `band_map_build`, same as the boot `columns (Hz):` line):
+
+| Mode | col 0 | 4 | 8 | 12 | 16 | 20 | 24 | 28 | 31 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LOG (Hz) | 118 | 276 | 433 | 728 | 1201 | 1949 | 3209 | 5216 | 7539 |
+| LINEAR (Hz) | 217 | 1201 | 2185 | 3169 | 4153 | 5138 | 6142 | 7126 | 7874 |
+
+- [ ] Column accuracy (R2), LOG: all 9 tones above → expect loudest column = the column in the header (±1 passes R2)
+- [ ] Column accuracy, LINEAR (MODE short press): at least 1201, 4153, 7874 Hz
+- [ ] Tone accuracy: the same LOG logs give shown-vs-set Hz; then `python3 tools/plot_accuracy.py docs/evidence/accuracy.csv --bin-hz 39.37`
+- [ ] Frequency response (R1): 50, 100, 200, 500 Hz, 1, 2, 5, 8, 10, 12, 15 kHz, same amplitude; `level_db` in the CSV vs frequency (expect ≈ flat to 8 kHz, then the 12 kHz RC roll-off)
+- [ ] Aliasing (R6): **25, 35, 38 kHz**. Sampling at 40.3 kHz, a tone at f shows up at 40 314 − f: 25 kHz → 15.3 kHz (off the display, should show nothing), 35 kHz → 5.3 kHz (column 28), 38 kHz → 2.3 kHz (column 21). Log each with and without the 2.2 nF cap; `tone_stats.py --set-hz 35000` reports where it appears and how loud. (The 30/10 plan said 25 and 30 kHz: both alias above 8 kHz, so they can't show the problem.)
+- [ ] Optional — leakage: 1 kHz with `APP_USE_WINDOW` 1 vs 0 (needs a rebuild); how many neighbouring columns light
 
 ### B4. Acoustic path (phone tone app → speaker → mic)
 - [ ] Same tone list as B3, phone at fixed distance (note it) — `tone_stats.py … --path acoustic` into the same CSV, so the plot compares both paths

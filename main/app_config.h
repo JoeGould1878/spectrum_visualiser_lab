@@ -42,7 +42,7 @@
 
 /* ---------------- Sampling and FFT ---------------- */
 #define APP_SAMPLE_RATE_HZ       40000   /* requested; S3 allows 611..83333 (SOC_ADC_SAMPLE_FREQ_THRES_*) */
-#define APP_SAMPLE_RATE_ACTUAL_HZ 40000  /* MEASURE: RATE value from bring-up 02 — used for all Hz maths */
+#define APP_SAMPLE_RATE_ACTUAL_HZ 40314  /* measured: median of 172 RATE lines, 2026-11-05 logs (34246..40321; low values = boot) — used for all Hz maths */
 #define APP_FFT_N                1024    /* both modes: bins = N/2; bin width = rate / N */
 #define APP_DECIMATE_FULL        1
 /* Bass/voice mode constants: not used since 05/11 (two modes only, same FFT). */
