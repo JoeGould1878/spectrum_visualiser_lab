@@ -112,7 +112,7 @@ Tones = the centre of every 4th column at the measured rate (bins 39.37 Hz; from
 ### B5. Buttons and modes
 - [ ] MODE short toggles LOG ↔ LINEAR; MODE long changes brightness; LISTEN short stops/starts (blank display); LISTEN long does nothing — each logged
 - [ ] Boot staircase rises bottom-left → top-right after every power-up and reflash, no button presses
-- [ ] Mode label (branch `feature/mode-label`): after the staircase the saved mode's name shows for ~1 s; each MODE short press shows the new name (LOG / LINEAR) for ~1 s, then bars; serial shows `label LOG` / `label LINEAR`. Evidence: short video of 3–4 presses + log
+- [x] Mode label (checked by Joe 06/11, merged into `main`): after the staircase the saved mode's name shows for ~1 s; each MODE short press shows the new name (LOG / LINEAR) for ~1 s, then bars; serial shows `label LOG` / `label LINEAR`. Evidence: short video of 3–4 presses + log
 - [ ] Power-cycle: mode and brightness survive (R8); always comes back listening
 - [ ] Optional: USB power meter, brightness 0 vs 15 (sustainability point)
 
