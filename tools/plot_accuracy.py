@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plot tone accuracy from the CSV built by tone_stats.py (tests B3, B4).
 
-    python tools/plot_accuracy.py docs/evidence/accuracy.csv --bin-hz 39.06
+    python tools/plot_accuracy.py docs/evidence/accuracy.csv --bin-hz 39.37
 
 Top: shown Hz vs set Hz (log axes). Bottom: error in Hz with +/- half a bin
 and +/- one bin marked. Electrical and acoustic paths in different series.
@@ -20,7 +20,7 @@ import matplotlib.ticker
 
 ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
 ap.add_argument("csv")
-ap.add_argument("--bin-hz", type=float, default=40000 / 1024, help="FFT bin width (rate / N)")
+ap.add_argument("--bin-hz", type=float, default=40314 / 1024, help="FFT bin width (rate / N)")
 ap.add_argument("--out", help="PNG path (default: docs/evidence/plots/<csv name>.png)")
 args = ap.parse_args()
 
@@ -29,11 +29,11 @@ with open(args.csv) as fh:
 if not rows:
     raise SystemExit("no rows with a shown_hz value")
 
-print("| Path | Set (Hz) | Shown (Hz) | Error (Hz) | Error (%) | Spread (Hz) | Column |")
-print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
-for r in sorted(rows, key=lambda r: (r["path"], float(r["set_hz"]))):
-    print(f"| {r['path']} | {float(r['set_hz']):.0f} | {float(r['shown_hz']):.1f} | {float(r['error_hz']):+.1f} | "
-          f"{float(r['error_pct']):+.2f} | {float(r['spread_hz']):.1f} | {r['peak_col']} |")
+print("| Path | Mode | Set (Hz) | Shown (Hz) | Error (Hz) | Error (%) | Spread (Hz) | Column | Expected | R2 |")
+print("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |")
+for r in sorted(rows, key=lambda r: (r["path"], r.get("mode", ""), float(r["set_hz"]))):
+    print(f"| {r['path']} | {r.get('mode', '')} | {float(r['set_hz']):.0f} | {float(r['shown_hz']):.1f} | {float(r['error_hz']):+.1f} | "
+          f"{float(r['error_pct']):+.2f} | {float(r['spread_hz']):.1f} | {r['peak_col']} | {r.get('expected_col', '')} | {r.get('col_ok', '')} |")
 
 fig, (a1, a2) = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 for path, marker in (("electrical", "o"), ("acoustic", "s")):

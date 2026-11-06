@@ -96,8 +96,8 @@ Tones = the centre of every 4th column at the measured rate (bins 39.37 Hz; from
 | LOG (Hz) | 118 | 276 | 433 | 728 | 1201 | 1949 | 3209 | 5216 | 7539 |
 | LINEAR (Hz) | 217 | 1201 | 2185 | 3169 | 4153 | 5138 | 6142 | 7126 | 7874 |
 
-- [ ] Column accuracy (R2), LOG: all 9 tones above → expect loudest column = the column in the header (±1 passes R2)
-- [ ] Column accuracy, LINEAR (MODE short press): at least 1201, 4153, 7874 Hz
+- [ ] Column accuracy (R2), LOG: all 9 tones above → expect loudest column = the column in the header (±1 passes R2). **06/11: only 1201, 4153, 7874 Hz done in LOG (all correct); the other 8 still to do.** `tone_stats.py` now prints the mode and the expected column, so check its output after each log
+- [x] Column accuracy, LINEAR (06/11): all 9 LOG-table tones (118 … 7539 Hz) ran in LINEAR by mistake — 9/9 in the expected LINEAR column; shown Hz within 0.03 % (`accuracy.csv`, `plots/accuracy.png`)
 - [ ] Tone accuracy: the same LOG logs give shown-vs-set Hz; then `python3 tools/plot_accuracy.py docs/evidence/accuracy.csv --bin-hz 39.37`
 - [ ] Frequency response (R1): 50, 100, 200, 500 Hz, 1, 2, 5, 8, 10, 12, 15 kHz, same amplitude; `level_db` in the CSV vs frequency (expect ≈ flat to 8 kHz, then the 12 kHz RC roll-off)
 - [ ] Aliasing (R6): **25, 35, 38 kHz**. Sampling at 40.3 kHz, a tone at f shows up at 40 314 − f: 25 kHz → 15.3 kHz (off the display, should show nothing), 35 kHz → 5.3 kHz (column 28), 38 kHz → 2.3 kHz (column 21). Log each with and without the 2.2 nF cap; `tone_stats.py --set-hz 35000` reports where it appears and how loud. (The 30/10 plan said 25 and 30 kHz: both alias above 8 kHz, so they can't show the problem.)

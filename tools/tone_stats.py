@@ -5,8 +5,10 @@ Record one log per tone (a few seconds each), then for each:
 
     python tools/tone_stats.py LOG --set-hz 440 --path electrical --csv docs/evidence/accuracy.csv
 
-Prints median shown Hz, error, spread, and which column was loudest; appends
-one row to the CSV. Then plot all rows with plot_accuracy.py.
+Prints median shown Hz, error, spread, which column was loudest, the mode the
+board was really in (from the FRAME lines) and the column the tone should land
+in (from the last `columns (Hz):` line in the log, i.e. the active mode's map);
+appends one row to the CSV. Then plot all rows with plot_accuracy.py.
 
 Implementation: Claude (Anthropic), to Joe Gould's design and interface;
   reviewed and tested by Joe Gould
@@ -14,8 +16,11 @@ Implementation: Claude (Anthropic), to Joe Gould's design and interface;
 import argparse
 import csv
 import os
+import re
 import numpy as np
 from logparse import parse, need
+
+MODE_NAMES = {0: "LOG", 3: "LINEAR"}
 
 ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
 ap.add_argument("log")
@@ -37,8 +42,22 @@ peak_cols = [int(np.argmax(f["cols"])) for f in frames]
 col_mode = max(set(peak_cols), key=peak_cols.count) if peak_cols else -1
 col_share = 100.0 * peak_cols.count(col_mode) / max(len(peak_cols), 1)
 
-row = dict(set_hz=args.set_hz, path=args.path, log=os.path.basename(args.log), frames=len(frames),
-           valid_pct=round(valid_pct, 1), peak_col=col_mode, peak_col_pct=round(col_share, 1))
+modes = [f["mode"] for f in frames]
+mode = max(set(modes), key=modes.count) if modes else -1
+mode_name = MODE_NAMES.get(mode, str(mode))
+
+# Column the tone should land in: last column map printed before the analysed frames
+edges = None
+with open(args.log, errors="replace") as fh:
+    for line in fh:
+        if "columns (Hz):" in line:
+            edges = [(int(c), float(a), float(b)) for c, a, b in re.findall(r"(\d+):([\d.]+)-([\d.]+)", line.split("columns (Hz):")[1])]
+expected = next((c for c, a, b in (edges or []) if a <= args.set_hz < b), "")
+col_ok = "" if expected == "" else ("yes" if abs(col_mode - expected) <= 1 else "NO")
+
+row = dict(set_hz=args.set_hz, path=args.path, mode=mode_name, log=os.path.basename(args.log), frames=len(frames),
+           valid_pct=round(valid_pct, 1), peak_col=col_mode, peak_col_pct=round(col_share, 1),
+           expected_col=expected, col_ok=col_ok)
 if tones:
     hz = np.array([t["hz"] for t in tones])
     db = np.array([t["db"] for t in tones])
@@ -51,11 +70,13 @@ if tones:
           f"{row['error_pct']:+.2f} %), 5-95 % spread {row['spread_hz']:.1f} Hz, level {row['level_db']} dBFS")
 else:
     print(f"set {args.set_hz:.1f} Hz -> no tone found (below APP_TONE_MIN_DB?)")
-print(f"tone found in {valid_pct:.0f} % of {len(frames)} frames; loudest column {col_mode} in {col_share:.0f} % of frames")
+print(f"mode {mode_name}; tone found in {valid_pct:.0f} % of {len(frames)} frames; loudest column {col_mode} in {col_share:.0f} % of frames"
+      + (f"; expected column {expected} -> {'OK (within 1)' if col_ok == 'yes' else 'WRONG'}" if expected != "" else
+         "; set frequency is outside the displayed range"))
 
 if args.csv:
-    fields = ["set_hz", "path", "shown_hz", "error_hz", "error_pct", "spread_hz", "level_db",
-              "peak_col", "peak_col_pct", "valid_pct", "frames", "log"]
+    fields = ["set_hz", "path", "mode", "shown_hz", "error_hz", "error_pct", "spread_hz", "level_db",
+              "peak_col", "expected_col", "col_ok", "peak_col_pct", "valid_pct", "frames", "log"]
     new = not os.path.exists(args.csv)
     os.makedirs(os.path.dirname(args.csv) or ".", exist_ok=True)
     with open(args.csv, "a", newline="") as fh:
